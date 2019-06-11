@@ -1,0 +1,50 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+}
+
+allprojects {
+	apply plugin: 'maven-publish'
+	apply plugin: 'signing'
+	
+	group = 'io.jcoder.odin'
+	version = '0.1.0-SNAPSHOT'
+
+	repositories {
+		maven {
+			// Google's mirror of Maven Central
+			url 'https://maven-central.storage.googleapis.com'
+		}
+		jcenter()
+		mavenCentral()
+	}
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			pom {
+				name = 'odin'
+				description = 'A Java Dependency Injection Library'
+				url = 'https://jcoder.io'
+				licenses {
+					license {
+						name = 'The Apache License, Version 2.0'
+						url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+					}
+				}
+				developers {
+					developer {
+						id = 'camilojc'
+						name = 'Camilo Gonzalez'
+						email = 'camilo@jcoder.io'
+					}
+				}
+				scm {
+					url = 'https://github.com/jcoderltd/odin'
+				}
+			}
+		}
+	}
+}
