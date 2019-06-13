@@ -1,0 +1,31 @@
+ext.customizePom = { pom, name ->
+	pom.name = name
+	pom.description = 'A Java Dependency Injection Library'
+	pom.url = 'https://jcoder.io'
+	pom.organization {
+		name = 'JCoder Ltd'
+		url = 'https://jcoder.io'
+	}
+	pom.licenses {
+		license {
+			name = 'The Apache License, Version 2.0'
+			url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+		}
+	}
+	pom.issueManagement {
+		system = 'GitHub'
+		url = 'https://github.com/jcoderltd/odin/issues'
+	}
+	pom.developers {
+		developer {
+			id = 'camilojc'
+			name = 'Camilo Gonzalez'
+			email = 'camilo@jcoder.io'
+		}
+	}
+	pom.scm {
+		url = 'https://github.com/jcoderltd/odin'
+		connection = "scm:git:github.com:jcoderltd/odin.git"
+		developerConnection = "scm:git:github.com:jcoderltd/odin.git"
+	}
+}

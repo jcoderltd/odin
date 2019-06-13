@@ -1,5 +1,7 @@
 apply plugin: 'java'
 
+apply from: '../scripts/gradle/publishing.gradle'
+
 dependencies {
 	compile 'javax.servlet:javax.servlet-api:3.1.0'
 	
@@ -42,17 +44,14 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 	from javadoc.destinationDir
 }
 
-artifacts {
-	archives jar
-	archives sourceJar
-	archives javadocJar
-}
-
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
+			def artifactName = 'odin-core'
+			project.ext.customizePom(pom, artifactName)
+			
 			groupId 'io.jcoder.odin'
-			artifactId 'odin-core'
+			artifactId artifactName
 			version project.version
 			
 			from components.java
@@ -64,5 +63,11 @@ publishing {
 				classifier = 'javadoc'
 			}
 		}
+	}
+}
+
+if (project.hasProperty('signing.keyId')) {
+	signing {
+	    sign publishing.publications.mavenJava
 	}
 }

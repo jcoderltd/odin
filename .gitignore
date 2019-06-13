@@ -12,3 +12,4 @@ npm-debug.log.*
 *.launch
 .settings/
 *.sublime-workspace
+.README.md.html

@@ -4,6 +4,8 @@ buildscript {
 	}
 }
 
+apply from: './scripts/gradle/publishing.gradle'
+
 allprojects {
 	apply plugin: 'maven-publish'
 	apply plugin: 'signing'
@@ -19,32 +21,33 @@ allprojects {
 		jcenter()
 		mavenCentral()
 	}
+	
+	publishing {
+		repositories {
+			maven {
+				url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+				if (project.hasProperty('sonatypeUsername')) {
+					credentials {
+						username sonatypeUsername
+						password sonatypePassword
+					}
+				}
+			}
+		}
+	}
 }
 
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
-			pom {
-				name = 'odin'
-				description = 'A Java Dependency Injection Library'
-				url = 'https://jcoder.io'
-				licenses {
-					license {
-						name = 'The Apache License, Version 2.0'
-						url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-					}
-				}
-				developers {
-					developer {
-						id = 'camilojc'
-						name = 'Camilo Gonzalez'
-						email = 'camilo@jcoder.io'
-					}
-				}
-				scm {
-					url = 'https://github.com/jcoderltd/odin'
-				}
-			}
+			def artifactName = 'odin'
+			project.ext.customizePom(pom, artifactName)
 		}
+	}
+}
+
+if (project.hasProperty('signing.keyId')) {
+	signing {
+	    sign publishing.publications.mavenJava
 	}
 }
