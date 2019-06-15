@@ -39,7 +39,7 @@ public class FactoryMethodConstructionFunction<T> implements ConstructionFunctio
         this.parameterReferences = parameterReferences;
 
         this.parameterTypes = parameterReferences.stream().map(ref -> ref.getInjectableType()).toArray(Class<?>[]::new);
-        this.method = this.factoryType.getMethod(staticMethodName, parameterTypes);
+        this.method = this.factoryType.getDeclaredMethod(staticMethodName, parameterTypes);
         this.method.setAccessible(true);
 
         Preconditions.checkArgument(Modifier.isStatic(this.method.getModifiers()), "The provided method must be static");

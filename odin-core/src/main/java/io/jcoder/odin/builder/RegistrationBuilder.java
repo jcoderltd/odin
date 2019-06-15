@@ -51,6 +51,8 @@ public class RegistrationBuilder<T> {
 
     private String name;
 
+    private String qualifierName;
+
     private ConstructionFunction<T> constructor;
 
     private PostConstructionFunction<T> postConstructor;
@@ -59,7 +61,7 @@ public class RegistrationBuilder<T> {
 
     private Class<? extends InstanceScope> scopeType;
 
-    public RegistrationBuilder(final Class<T> classToRegister) {
+    public RegistrationBuilder(Class<T> classToRegister) {
         Preconditions.checkNotNull(classToRegister, "The provided class must not be null");
         this.name = classToRegister.getName();
         this.classToRegister = classToRegister;
@@ -68,7 +70,7 @@ public class RegistrationBuilder<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public RegistrationBuilder(final T registeredObject) {
+    public RegistrationBuilder(T registeredObject) {
         Preconditions.checkNotNull(registeredObject, "The provided object must not be null");
         this.objectToRegister = Optional.of(registeredObject);
         this.scopeType = SingletonScope.class;
@@ -76,15 +78,15 @@ public class RegistrationBuilder<T> {
         this.name = this.classToRegister.getName();
     }
 
-    public static <T> RegistrationBuilder<T> type(final Class<T> classToRegister) {
+    public static <T> RegistrationBuilder<T> type(Class<T> classToRegister) {
         return new RegistrationBuilder<T>(classToRegister);
     }
 
-    public static <T> RegistrationBuilder<T> singleton(final Class<T> classToRegister) {
+    public static <T> RegistrationBuilder<T> singleton(Class<T> classToRegister) {
         return new RegistrationBuilder<T>(classToRegister).asSingleton();
     }
 
-    public static <T> RegistrationBuilder<T> object(final T objectToRegister) {
+    public static <T> RegistrationBuilder<T> object(T objectToRegister) {
         return new RegistrationBuilder<T>(objectToRegister);
     }
 
@@ -115,36 +117,34 @@ public class RegistrationBuilder<T> {
         return this;
     }
 
-    public RegistrationBuilder<T> withConstructor(final Class<?>... parameterTypes) throws NoSuchMethodException {
+    public RegistrationBuilder<T> withConstructor(Class<?>... parameterTypes) throws NoSuchMethodException {
         if (constructor != null) {
             throw new IllegalStateException(
                     "A constructor reference has already been defined. Are you calling withConstructor or withFactory more than once?");
         }
 
-        final Constructor<T> typedConstructor = this.classToRegister.getConstructor(parameterTypes);
+        final Constructor<T> typedConstructor = this.classToRegister.getDeclaredConstructor(parameterTypes);
         this.constructor = new ClassConstructorFunction<>(typedConstructor);
         return this;
     }
 
-    public RegistrationBuilder<T> withConstructor(final InjectableReference<?>... parameterReferences)
-            throws NoSuchMethodException {
+    public RegistrationBuilder<T> withConstructor(InjectableReference<?>... parameterReferences) throws NoSuchMethodException {
         if (constructor != null) {
             throw new IllegalStateException(
                     "A constructor reference has already been defined. Are you calling withConstructor or withFactory more than once?");
         }
         final Class<?>[] parameterTypes = Stream.of(parameterReferences).map(ref -> ref.getInjectableType()).toArray(Class<?>[]::new);
 
-        final Constructor<T> typedConstructor = this.classToRegister.getConstructor(parameterTypes);
+        final Constructor<T> typedConstructor = this.classToRegister.getDeclaredConstructor(parameterTypes);
         this.constructor = new ClassConstructorFunction<>(typedConstructor, Arrays.asList(parameterReferences));
         return this;
     }
 
-    public RegistrationBuilder<T> withConstructor(final ReferenceBuilder<?>... parameterReferences)
-            throws NoSuchMethodException {
+    public RegistrationBuilder<T> withConstructor(ReferenceBuilder<?>... parameterReferences) throws NoSuchMethodException {
         return this.withConstructor(Stream.of(parameterReferences).map(ReferenceBuilder::build).toArray(InjectableReference<?>[]::new));
     }
 
-    public RegistrationBuilder<T> withFactory(final FactoryVarArgsFunction<T> factory, final Class<?>[] parameterTypes) {
+    public RegistrationBuilder<T> withFactory(FactoryVarArgsFunction<T> factory, Class<?>[] parameterTypes) {
         if (constructor != null) {
             throw new IllegalStateException(
                     "A constructor reference has already been defined. Are you calling withConstructor or withFactory more than once?");
@@ -155,8 +155,7 @@ public class RegistrationBuilder<T> {
         return this;
     }
 
-    public RegistrationBuilder<T> withFactory(final FactoryVarArgsFunction<T> factory,
-            final InjectableReference<?>... parameterReferences) {
+    public RegistrationBuilder<T> withFactory(FactoryVarArgsFunction<T> factory, InjectableReference<?>... parameterReferences) {
         if (constructor != null) {
             throw new IllegalStateException(
                     "A constructor reference has already been defined. Are you calling withConstructor or withFactory more than once?");
@@ -165,13 +164,12 @@ public class RegistrationBuilder<T> {
         return this;
     }
 
-    public RegistrationBuilder<T> withFactory(final FactoryVarArgsFunction<T> factory, final ReferenceBuilder<?>... parameterReferences) {
+    public RegistrationBuilder<T> withFactory(FactoryVarArgsFunction<T> factory, ReferenceBuilder<?>... parameterReferences) {
         return this.withFactory(factory,
                 Stream.of(parameterReferences).map(ReferenceBuilder::build).toArray(InjectableReference<?>[]::new));
     }
 
-    public RegistrationBuilder<T> withFactory(final Class<?> factoryClass, final String staticMethodName,
-            final InjectableReference<?>... parameterReferences)
+    public RegistrationBuilder<T> withFactory(Class<?> factoryClass, String staticMethodName, InjectableReference<?>... parameterReferences)
             throws NoSuchMethodException {
         if (constructor != null) {
             throw new IllegalStateException(
@@ -182,8 +180,7 @@ public class RegistrationBuilder<T> {
         return this;
     }
 
-    public RegistrationBuilder<T> withFactory(final Class<?> factoryClass, final String staticMethodName,
-            final ReferenceBuilder<?>... parameterReferences)
+    public RegistrationBuilder<T> withFactory(Class<?> factoryClass, String staticMethodName, ReferenceBuilder<?>... parameterReferences)
             throws NoSuchMethodException {
 
         return this.withFactory(factoryClass, staticMethodName,
@@ -200,77 +197,75 @@ public class RegistrationBuilder<T> {
         return this;
     }
 
-    public <O> RegistrationBuilder<T> withField(final String fieldName, final InjectableReference<?> parameterReference)
+    public <O> RegistrationBuilder<T> withField(String fieldName, InjectableReference<?> parameterReference)
             throws NoSuchFieldException {
 
         this.injectionFunctions.add(new FieldInjectionFunction<>(this.classToRegister, fieldName, parameterReference));
         return this;
     }
 
-    public <O> RegistrationBuilder<T> withField(final String fieldName, final ReferenceBuilder<?> parameterReference)
+    public <O> RegistrationBuilder<T> withField(String fieldName, ReferenceBuilder<?> parameterReference)
             throws NoSuchFieldException {
 
         return this.withField(fieldName, parameterReference.build());
     }
 
-    public <O> RegistrationBuilder<T> withField(final Class<? super T> baseClass, final String fieldName,
-            final InjectableReference<?> parameterReference)
+    public <O> RegistrationBuilder<T> withField(Class<? super T> baseClass, String fieldName, InjectableReference<?> parameterReference)
             throws NoSuchFieldException {
 
         this.injectionFunctions.add(new FieldInjectionFunction<>(baseClass, fieldName, parameterReference));
         return this;
     }
 
-    public <O> RegistrationBuilder<T> withField(final Class<? super T> baseClass, final String fieldName,
-            final ReferenceBuilder<?> parameterReference)
+    public <O> RegistrationBuilder<T> withField(Class<? super T> baseClass, String fieldName, ReferenceBuilder<?> parameterReference)
             throws NoSuchFieldException {
 
         return this.withField(fieldName, parameterReference.build());
     }
 
-    public <O> RegistrationBuilder<T> withMethod(final String methodName, final InjectableReference<?>... parameterReferences)
+    public <O> RegistrationBuilder<T> withMethod(String methodName, InjectableReference<?>... parameterReferences)
             throws NoSuchMethodException {
         this.injectionFunctions.add(new MethodInjectionFunction<>(this.classToRegister, methodName, Arrays.asList(parameterReferences)));
         return this;
     }
 
-    public <O> RegistrationBuilder<T> withMethod(final String methodName, final ReferenceBuilder<?>... parameterReferences)
+    public <O> RegistrationBuilder<T> withMethod(String methodName, ReferenceBuilder<?>... parameterReferences)
             throws NoSuchMethodException {
 
         return this.withMethod(methodName,
                 Stream.of(parameterReferences).map(ReferenceBuilder::build).toArray(InjectableReference<?>[]::new));
     }
 
-    public <O> RegistrationBuilder<T> withSetter(final SetterFunction<T, O> setter, final Class<O> classToInject) {
+    public <O> RegistrationBuilder<T> withSetter(SetterFunction<T, O> setter, Class<O> classToInject) {
         this.injectionFunctions.add(new SetterInjectionFunction<>(this.classToRegister, setter,
                 new TypedInjectableReference<>(classToInject)));
         return this;
     }
 
-    public <O> RegistrationBuilder<T> withSetterByName(final SetterFunction<T, O> setter, final String name, final Class<O> classToInject) {
+    public <O> RegistrationBuilder<T> withSetterByName(SetterFunction<T, O> setter, String name, Class<O> classToInject) {
         this.injectionFunctions.add(new SetterInjectionFunction<>(this.classToRegister, setter,
                 new NamedInjectableReference<>(name, classToInject)));
         return this;
     }
 
-    public <O> RegistrationBuilder<T> withSetterMulti(final SetterFunction<T, O> setter, final Class<O> classToInject,
-            final Class<?> genericType) {
+    public <O> RegistrationBuilder<T> withSetterMulti(SetterFunction<T, O> setter, Class<O> classToInject,
+            Class<?> genericType) {
         this.injectionFunctions.add(new SetterInjectionFunction<>(this.classToRegister, setter,
                 new TypedMultiInjectableReference<>(classToInject, genericType)));
         return this;
     }
 
-    public <O> RegistrationBuilder<T> withSetter(final SetterFunction<T, O> setter, final ReferenceBuilder<O> ref) {
+    public <O> RegistrationBuilder<T> withSetter(SetterFunction<T, O> setter, final ReferenceBuilder<O> ref) {
         this.injectionFunctions.add(new SetterInjectionFunction<>(this.classToRegister, setter, ref.build()));
         return this;
     }
 
-    public <O> RegistrationBuilder<T> withSetter(final SetterFunction<T, O> setter, final InjectableReference<O> ref) {
+    public <O> RegistrationBuilder<T> withSetter(SetterFunction<T, O> setter, final InjectableReference<O> ref) {
         this.injectionFunctions.add(new SetterInjectionFunction<>(this.classToRegister, setter, ref));
         return this;
     }
 
-    public RegistrationBuilder<T> withPostConstructor(final PostConstructionFunction<T> postConstructor) {
+    public RegistrationBuilder<T> withPostConstructor(PostConstructionFunction<T> postConstructor) {
         if (this.postConstructor != null) {
             throw new IllegalStateException(
                     "A post constructor reference has already been defined. Are you calling withPostConstructor more than once?");
@@ -280,7 +275,7 @@ public class RegistrationBuilder<T> {
         return this;
     }
 
-    public RegistrationBuilder<T> withPreDestroy(final PreDestroyFunction<T> preDestroy) {
+    public RegistrationBuilder<T> withPreDestroy(PreDestroyFunction<T> preDestroy) {
         if (this.preDestroy != null) {
             throw new IllegalStateException(
                     "A pre-destroy reference has already been defined. Are you calling withPreDestroy more than once?");
@@ -290,9 +285,15 @@ public class RegistrationBuilder<T> {
         return this;
     }
 
-    public RegistrationBuilder<T> named(final String name) {
+    public RegistrationBuilder<T> named(String name) {
         Preconditions.checkNotNull(name, "Registration name must not be null");
         this.name = name;
+        return this;
+    }
+
+    public RegistrationBuilder<T> qualifiedBy(String qualifierName) {
+        Preconditions.checkNotNull(qualifierName, "When provided, the qualifier name must not be null");
+        this.qualifierName = qualifierName;
         return this;
     }
 
@@ -302,9 +303,9 @@ public class RegistrationBuilder<T> {
         }
 
         return this.objectToRegister
-                .map(object -> new InjectionRegistration<T>(name, object,
+                .map(object -> new InjectionRegistration<T>(name, qualifierName, object,
                         injectionFunctions, postConstructor, preDestroy))
-                .orElse(new InjectionRegistration<T>(scopeType, name, classToRegister, constructor,
+                .orElse(new InjectionRegistration<T>(scopeType, name, qualifierName, classToRegister, constructor,
                         injectionFunctions, postConstructor, preDestroy));
     }
 

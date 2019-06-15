@@ -5,6 +5,7 @@ package io.jcoder.odin.annotation.component;
 
 import static io.jcoder.odin.annotation.builder.AnnotationAwareRegistrationBuilder.annotated;
 import static io.jcoder.odin.annotation.reflection.AnnotationUtils.processParameterReferences;
+import static io.jcoder.odin.annotation.reflection.AnnotationUtils.qualifierFromAnnotations;
 import static io.jcoder.odin.builder.RegistrationBuilder.type;
 
 import java.lang.reflect.Field;
@@ -80,7 +81,7 @@ public class DefaultComponentRegistrar implements ComponentRegistrar {
 
         initialized = true;
         // now, process all components
-        for (final Class<?> component : components) {
+        for (Class<?> component : components) {
             processRegistrations(component);
         }
 
@@ -88,11 +89,18 @@ public class DefaultComponentRegistrar implements ComponentRegistrar {
     }
 
     private void processRegistrations(final Class<?> component) {
-        for (final Field field : component.getDeclaredFields()) {
+        for (Field field : component.getDeclaredFields()) {
             if (field.isAnnotationPresent(Registration.class)) {
                 try {
                     logger.debug("Registering annotated: " + field.getType());
-                    context.register(annotated(field.getType()));
+                    Class<?> qualifier = qualifierFromAnnotations(field.getDeclaredAnnotations());
+                    Named namedAnnotation = field.getAnnotation(Named.class);
+                    boolean isSingleton = field.isAnnotationPresent(Singleton.class);
+                    RegistrationBuilder<?> builder = annotated(field.getType());
+                    
+                    processBuilder(builder, isSingleton, namedAnnotation, qualifier);
+                    
+                    context.register(builder);
                 } catch (Exception e) {
                     throw new ComponentRegistrationException(
                             "Couldn't register field " + component + "." + field.getName() + " of type: " + field.getType(), e);
@@ -100,20 +108,17 @@ public class DefaultComponentRegistrar implements ComponentRegistrar {
             }
         }
 
-        for (final Method method : component.getDeclaredMethods()) {
+        for (Method method : component.getDeclaredMethods()) {
             if (Modifier.isStatic(method.getModifiers()) && method.isAnnotationPresent(Registration.class)) {
                 method.setAccessible(true);
 
-                final Class<?> classToRegister = method.getReturnType();
-                final RegistrationBuilder<?> builder = type(classToRegister);
-                if (method.isAnnotationPresent(Singleton.class)) {
-                    builder.asSingleton();
-                }
-
-                final Named namedAnnotation = method.getAnnotation(Named.class);
-                if (namedAnnotation != null) {
-                    builder.named(namedAnnotation.value());
-                }
+                Class<?> classToRegister = method.getReturnType();
+                Class<?> qualifier = qualifierFromAnnotations(method.getDeclaredAnnotations());
+                Named namedAnnotation = method.getAnnotation(Named.class);
+                boolean isSingleton = method.isAnnotationPresent(Singleton.class);
+                RegistrationBuilder<?> builder = type(classToRegister);
+                
+                processBuilder(builder, isSingleton, namedAnnotation, qualifier);
 
                 try {
                     builder.withFactory(component, method.getName(), processParameterReferences(method.getParameters()));
@@ -127,7 +132,21 @@ public class DefaultComponentRegistrar implements ComponentRegistrar {
         }
     }
 
-    private void getDependencies(final Class<?> componentToRegister, final boolean isLeaf) {
+    protected void processBuilder(RegistrationBuilder<?> builder, boolean isSingleton, Named namedAnnotation, Class<?> qualifier) {
+        if (isSingleton) {
+            builder.asSingleton();
+        }
+        
+        if (namedAnnotation != null) {
+            builder.named(namedAnnotation.value());
+        }
+        
+        if (namedAnnotation == null && qualifier != null && !qualifier.equals(Named.class)) {
+            builder.qualifiedBy(qualifier.getName());
+        }
+    }
+
+    private void getDependencies(Class<?> componentToRegister, boolean isLeaf) {
 
         if (componentToRegister == null || components.contains(componentToRegister)) {
             return;
@@ -141,10 +160,10 @@ public class DefaultComponentRegistrar implements ComponentRegistrar {
             components.add(componentToRegister);
         }
 
-        final ComponentDependency dependencyAnnotation = componentToRegister.getAnnotation(ComponentDependency.class);
+        ComponentDependency dependencyAnnotation = componentToRegister.getAnnotation(ComponentDependency.class);
         if (dependencyAnnotation != null) {
-            final Class<?>[] dependencyArray = dependencyAnnotation.value();
-            for (final Class<?> dependency : dependencyArray) {
+            Class<?>[] dependencyArray = dependencyAnnotation.value();
+            for (Class<?> dependency : dependencyArray) {
                 if (!dependency.isAnnotationPresent(Component.class)) {
                     throw new ComponentRegistrationException(
                             "The component class " + componentToRegister + " has non-component dependency: " + dependency

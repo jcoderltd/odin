@@ -7,6 +7,8 @@ import com.google.common.base.Preconditions;
 
 import io.jcoder.odin.reference.InjectableReference;
 import io.jcoder.odin.reference.NamedInjectableReference;
+import io.jcoder.odin.reference.ProviderInjectableReference;
+import io.jcoder.odin.reference.QualifiedInjectableReference;
 import io.jcoder.odin.reference.TypedInjectableReference;
 import io.jcoder.odin.reference.TypedMultiInjectableReference;
 
@@ -22,6 +24,8 @@ public class ReferenceBuilder<T> {
     private Class<?> genericType;
 
     private String name;
+
+    private String qualifierName;
 
     private boolean multi;
 
@@ -41,6 +45,11 @@ public class ReferenceBuilder<T> {
 
     public ReferenceBuilder<T> named(final String name) {
         this.name = name;
+        return this;
+    }
+
+    public ReferenceBuilder<T> qualifiedBy(final String qualifierName) {
+        this.qualifierName = qualifierName;
         return this;
     }
 
@@ -80,6 +89,16 @@ public class ReferenceBuilder<T> {
         if (name != null) {
             return new NamedInjectableReference<>(name, referencedType, nullable);
         }
+
+        if (qualifierName != null) {
+            return new QualifiedInjectableReference<>(qualifierName, referencedType, nullable);
+        }
+
         return new TypedInjectableReference<>(referencedType, nullable);
+    }
+
+    public ProviderInjectableReference<T> asProvider() {
+        InjectableReference<T> delegate = build();
+        return new ProviderInjectableReference<>(delegate);
     }
 }

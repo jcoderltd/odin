@@ -17,5 +17,4 @@ import java.lang.annotation.Target;
  * @author Camilo Gonzalez
  */
 public @interface Registration {
-
 }

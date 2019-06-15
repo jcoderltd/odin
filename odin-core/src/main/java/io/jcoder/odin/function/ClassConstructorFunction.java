@@ -72,6 +72,7 @@ public class ClassConstructorFunction<T> implements ConstructionFunction<T> {
         }
 
         this.constructorReference = constructorReference;
+        this.constructorReference.setAccessible(true);
         this.parameterReferences = new ArrayList<>(parameterReferences);
     }
 

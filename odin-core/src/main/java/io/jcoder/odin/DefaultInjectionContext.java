@@ -4,12 +4,15 @@
 package io.jcoder.odin;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import javax.inject.Provider;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -30,12 +33,15 @@ public class DefaultInjectionContext implements InjectionContext {
 
     private final Set<InjectionRegistration<?>> registry;
 
+    private final Map<InjectionRegistration<?>, InjectionRegistration<Provider<?>>> providersRegistry;
+
     private final ConcurrentMap<Class<? extends InstanceScope>, InstanceScope> registeredScopes;
 
     private volatile boolean initialized;
 
     public DefaultInjectionContext() {
         this.registry = new ConcurrentSkipListSet<>();
+        this.providersRegistry = new ConcurrentHashMap<>();
         this.registeredScopes = new ConcurrentHashMap<>();
         registerScope(new UnscopedInstanceScope());
         registerScope(new SingletonScope());
@@ -47,13 +53,31 @@ public class DefaultInjectionContext implements InjectionContext {
     }
 
     @Override
+    public <T> InjectionRegistration<Provider<?>> getProviderRegistration(InjectionRegistration<T> registration) {
+        InjectionRegistration<Provider<?>> providerRegistration = providersRegistry.computeIfAbsent(registration,
+                reg -> {
+                    Provider<T> provider = new Provider<T>() {
+                        @Override
+                        public T get() {
+                            return registration.get(DefaultInjectionContext.this);
+                        }
+                    };
+                    return new InjectionRegistration<>(Provider.class.getName() + "-" + registration.getName(), registration.getQualifierName(), provider, null, null, null);
+                });
+        return providerRegistration;
+    }
+
+    @Override
     public <T> InjectionRegistration<T> getRegistration(Class<T> objectClass) {
         Preconditions.checkNotNull(objectClass, "The requested class must not be null");
 
         Predicate<InjectionRegistration<T>> registrationFilter = reg -> {
-            return objectClass.isAssignableFrom(reg.getRegisteredClass());
+            return reg.getQualifierName() == null && objectClass.isAssignableFrom(reg.getRegisteredClass());
         };
-        return registrationFor(objectClass, registrationFilter);
+        Predicate<InjectionRegistration<T>> tieFilter = reg -> {
+            return reg.getName().equals(reg.getRegisteredClass().getName());
+        };
+        return registrationFor(objectClass, registrationFilter, tieFilter);
     }
 
     @Override
@@ -62,7 +86,18 @@ public class DefaultInjectionContext implements InjectionContext {
         Preconditions.checkNotNull(name, "The requested name must not be null");
 
         Predicate<InjectionRegistration<T>> registrationFilter = reg -> {
-            return name.equals(reg.getName()) && objectClass.isAssignableFrom(reg.getRegisteredClass());
+            return reg.getQualifierName() == null && name.equals(reg.getName()) && objectClass.isAssignableFrom(reg.getRegisteredClass());
+        };
+        return registrationFor(objectClass, registrationFilter);
+    }
+
+    @Override
+    public <T> InjectionRegistration<T> getQualifiedRegistration(Class<T> objectClass, String qualifierName) {
+        Preconditions.checkNotNull(objectClass, "The requested class must not be null");
+        Preconditions.checkNotNull(qualifierName, "The requested qualifier name must not be null");
+
+        Predicate<InjectionRegistration<T>> registrationFilter = reg -> {
+            return qualifierName.equals(reg.getQualifierName()) && objectClass.isAssignableFrom(reg.getRegisteredClass());
         };
         return registrationFor(objectClass, registrationFilter);
     }
@@ -95,6 +130,14 @@ public class DefaultInjectionContext implements InjectionContext {
     }
 
     @Override
+    public <T> T getWithQualifier(Class<T> objectClass, String qualifierName) {
+        checkInitialized();
+
+        InjectionRegistration<T> registration = getQualifiedRegistration(objectClass, qualifierName);
+        return registration == null ? null : registration.get(this);
+    }
+
+    @Override
     public <T> List<T> getMulti(Class<T> objectClass) {
         checkInitialized();
 
@@ -106,6 +149,26 @@ public class DefaultInjectionContext implements InjectionContext {
             Predicate<InjectionRegistration<T>> registrationFilter) {
 
         return getMatchingRegistrations(objectClass, registrationFilter);
+    }
+
+    private <T> InjectionRegistration<T> registrationFor(Class<T> requestedClass,
+            Predicate<InjectionRegistration<T>> registrationFilter,
+            Predicate<InjectionRegistration<T>> secondFilter) {
+
+        List<InjectionRegistration<T>> matchingRegistrations = getMatchingRegistrations(requestedClass, registrationFilter);
+        if (matchingRegistrations.size() > 1) {
+            matchingRegistrations = matchingRegistrations.stream().filter(secondFilter).collect(Collectors.toList());
+        }
+
+        if (matchingRegistrations.size() > 1) {
+            throw new IllegalArgumentException("Multiple registered instances/classes match the requested class: " + matchingRegistrations);
+        }
+
+        if (matchingRegistrations.size() == 1) {
+            return matchingRegistrations.get(0);
+        }
+
+        return null;
     }
 
     private <T> InjectionRegistration<T> registrationFor(Class<T> requestedClass,
@@ -145,7 +208,7 @@ public class DefaultInjectionContext implements InjectionContext {
         }
 
         if (!exists(InjectionContext.class)) {
-            this.registry.add(new InjectionRegistration<>(InjectionContext.class.getName(), this, null, null, null));
+            this.registry.add(new InjectionRegistration<>(InjectionContext.class.getName(), null, this, null, null, null));
         }
 
         DependencyGraph dependencyGraph = new DependencyGraph(this, new ConstructionDependencyProvider());

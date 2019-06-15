@@ -23,10 +23,10 @@ public interface InjectableReference<T> {
 
     List<InjectionRegistration<T>> getRegistrations(InjectionContext context);
 
-    Class<T> getInjectableType();
+    Class<?> getInjectableType();
 
     T get(InjectionContext context);
-
+    
     boolean isNullable();
 
 }

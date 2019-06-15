@@ -5,6 +5,7 @@ package io.jcoder.odin.registration;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Objects;
 
 import com.google.common.collect.ImmutableList;
 
@@ -43,12 +44,15 @@ import io.jcoder.odin.scope.SingletonScope;
  * object being invoked.</li>
  * </ul>
  * 
- * <p>{@link InjectionRegistration} objects are immutable.
+ * <p>
+ * {@link InjectionRegistration} objects are immutable.
  *
  * @author Camilo Gonzalez
  */
 public final class InjectionRegistration<T> implements Comparable<InjectionRegistration<T>> {
     private final String name;
+
+    private final String qualifierName;
 
     private final Class<T> registeredClass;
 
@@ -66,12 +70,12 @@ public final class InjectionRegistration<T> implements Comparable<InjectionRegis
 
     private final boolean provided;
 
-    public InjectionRegistration(Class<? extends InstanceScope> scopeType, String name, Class<T> registeredClass,
-            ConstructionFunction<T> constructor, List<InjectionFunction<T>> setters,
-            PostConstructionFunction<T> postConstructor,
+    public InjectionRegistration(Class<? extends InstanceScope> scopeType, String name, String qualifierName, Class<T> registeredClass,
+            ConstructionFunction<T> constructor, List<InjectionFunction<T>> setters, PostConstructionFunction<T> postConstructor,
             PreDestroyFunction<T> preDestroy) {
 
         this.name = name;
+        this.qualifierName = qualifierName;
         this.registeredClass = registeredClass;
         this.scopeType = scopeType;
         this.constructor = constructor;
@@ -87,11 +91,11 @@ public final class InjectionRegistration<T> implements Comparable<InjectionRegis
     }
 
     @SuppressWarnings("unchecked")
-    public InjectionRegistration(String name, T registeredObject, List<InjectionFunction<T>> setters,
-            PostConstructionFunction<T> postConstructor,
-            PreDestroyFunction<T> preDestroy) {
+    public InjectionRegistration(String name, String qualifierName, T registeredObject, List<InjectionFunction<T>> setters,
+            PostConstructionFunction<T> postConstructor, PreDestroyFunction<T> preDestroy) {
 
         this.name = name;
+        this.qualifierName = qualifierName;
         this.registeredObject = registeredObject;
         this.scopeType = SingletonScope.class;
         this.constructor = null;
@@ -108,6 +112,10 @@ public final class InjectionRegistration<T> implements Comparable<InjectionRegis
 
     public String getName() {
         return name;
+    }
+
+    public String getQualifierName() {
+        return qualifierName;
     }
 
     public Class<T> getRegisteredClass() {
@@ -170,7 +178,6 @@ public final class InjectionRegistration<T> implements Comparable<InjectionRegis
             }
             return object;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
-            scope.setInstance(this, null);
             throw new ObjectCreationException("Exception creating instance of type: " + registeredClass, ex);
         }
     }
@@ -203,13 +210,10 @@ public final class InjectionRegistration<T> implements Comparable<InjectionRegis
 
     @Override
     public int hashCode() {
-        int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((registeredClass == null) ? 0 : registeredClass.hashCode());
-        return result;
+        return Objects.hash(name, qualifierName, registeredClass);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -221,35 +225,33 @@ public final class InjectionRegistration<T> implements Comparable<InjectionRegis
         if (getClass() != obj.getClass()) {
             return false;
         }
-        InjectionRegistration<?> other = (InjectionRegistration<?>) obj;
-        if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!name.equals(other.name)) {
-            return false;
-        }
-        if (registeredClass == null) {
-            if (other.registeredClass != null) {
-                return false;
-            }
-        } else if (!registeredClass.equals(other.registeredClass)) {
-            return false;
-        }
-        return true;
+        InjectionRegistration other = (InjectionRegistration) obj;
+        return Objects.equals(name, other.name) && Objects.equals(qualifierName, other.qualifierName)
+                && Objects.equals(registeredClass, other.registeredClass);
     }
 
     @Override
     public int compareTo(InjectionRegistration<T> o) {
-        if (!registeredClass.equals(o.registeredClass)) {
-            return name.compareTo(o.name);
+        if (registeredClass.equals(o.registeredClass)) {
+            if (qualifierName == null && o.qualifierName != null) {
+                return -1;
+            }
+
+            if (qualifierName != null && o.qualifierName == null) {
+                return 1;
+            }
+
+            if (qualifierName == null || qualifierName.equals(o.qualifierName)) {
+                return name.compareTo(o.name);
+            }
+            return qualifierName.compareTo(o.qualifierName);
         }
-        return 0;
+        return registeredClass.getName().compareTo(o.registeredClass.getName());
     }
 
     @Override
     public String toString() {
-        return "[name=" + name + ", registeredClass=" + registeredClass + "]";
+        return "[name=" + name + ", qualifierName=" + qualifierName + ", registeredClass=" + registeredClass + "]";
     }
 
 }

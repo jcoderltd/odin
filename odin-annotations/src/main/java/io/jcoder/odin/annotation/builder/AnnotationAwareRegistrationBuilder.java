@@ -3,10 +3,11 @@
  */
 package io.jcoder.odin.annotation.builder;
 
+import static io.jcoder.odin.annotation.reflection.AnnotationUtils.buildInjectableReference;
+import static io.jcoder.odin.annotation.reflection.AnnotationUtils.getProviderGenericType;
 import static io.jcoder.odin.annotation.reflection.AnnotationUtils.processParameterReferences;
-import static io.jcoder.odin.annotation.reflection.AnnotationUtils.qualifierFromAnnotations;
-import static io.jcoder.odin.annotation.reflection.AnnotationUtils.supportsMulti;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -19,6 +20,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.google.common.base.Preconditions;
@@ -30,9 +32,6 @@ import io.jcoder.odin.annotation.ScopedTo;
 import io.jcoder.odin.annotation.component.Component;
 import io.jcoder.odin.builder.RegistrationBuilder;
 import io.jcoder.odin.reference.InjectableReference;
-import io.jcoder.odin.reference.NamedInjectableReference;
-import io.jcoder.odin.reference.TypedInjectableReference;
-import io.jcoder.odin.reference.TypedMultiInjectableReference;
 import io.jcoder.odin.web.RequestScope;
 
 /**
@@ -43,12 +42,12 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
 
     private final Class<T> classToRegister;
 
-    public AnnotationAwareRegistrationBuilder(final Class<T> classToRegister) {
+    public AnnotationAwareRegistrationBuilder(Class<T> classToRegister) {
         super(classToRegister);
         this.classToRegister = classToRegister;
     }
 
-    public static <T> RegistrationBuilder<T> annotated(final Class<T> classToRegister) {
+    public static <T> RegistrationBuilder<T> annotated(Class<T> classToRegister) {
         final AnnotationAwareRegistrationBuilder<T> builder = new AnnotationAwareRegistrationBuilder<>(classToRegister);
 
         builder.processAnnotations();
@@ -61,7 +60,7 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
         processNameAnnotation();
         processConstructorAnnotations();
         processFieldAnnotations(this.classToRegister);
-        processMethodAnnotations(this.classToRegister, new ArrayList<>(), new ArrayList<>());
+        processMethodAnnotations(this.classToRegister);
         processPostConstructAnnotation();
         processPreDestroyAnnotation();
     }
@@ -72,7 +71,7 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
         } else if (classToRegister.isAnnotationPresent(RequestScoped.class)) {
             scopedTo(RequestScope.class);
         } else if (classToRegister.isAnnotationPresent(ScopedTo.class)) {
-            final ScopedTo scopedToAnnotation = classToRegister.getAnnotation(ScopedTo.class);
+            ScopedTo scopedToAnnotation = classToRegister.getAnnotation(ScopedTo.class);
             Preconditions.checkNotNull("A scope type must be declared in the ScopedTo annotation of class: " + classToRegister);
             scopedTo(scopedToAnnotation.value());
         }
@@ -110,7 +109,7 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
         }
     }
 
-    private void processFieldAnnotations(final Class<? super T> classToProcess) {
+    private void processFieldAnnotations(Class<? super T> classToProcess) {
         if (classToProcess == null) {
             return;
         }
@@ -131,30 +130,39 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
         }
     }
 
-    private void processMethodAnnotations(final Class<? super T> classToProcess, final List<MethodDetails> injectedMethods,
-            final List<MethodDetails> nonInjectedMethods) {
+    private void processMethodAnnotations(Class<T> classToProcess) {
+        List<MethodDetails> injectedMethods = new ArrayList<>();
+        processMethodAnnotations(classToProcess, injectedMethods, new ArrayList<>());
+
+        for (int i = injectedMethods.size() - 1; i >= 0; i--) {
+            Method method = injectedMethods.get(i).method;
+            InjectableReference<?>[] parameterReferences = processParameterReferences(method.getParameters());
+            try {
+                withMethod(method.getName(), parameterReferences);
+            } catch (NoSuchMethodException e) {
+                throw new IllegalStateException(
+                        "Couldn't find method " + method.getName() + " that we had a reference for in class: "
+                                + classToProcess.getName());
+            }
+        }
+    }
+    
+    private void processMethodAnnotations(Class<? super T> classToProcess, List<MethodDetails> injectedMethods,
+            List<MethodDetails> nonInjectedMethods) {
 
         if (classToProcess == null) {
             return;
         }
 
         for (final Method method : classToProcess.getDeclaredMethods()) {
-            final MethodDetails md = new MethodDetails(method.getName(), method.getParameterTypes());
+            final MethodDetails md = new MethodDetails(method, method.getParameterTypes());
             if (injectedMethods.contains(md) || nonInjectedMethods.contains(md)) {
                 continue;
             }
 
             if (method.isAnnotationPresent(Inject.class)) {
-                final InjectableReference<?>[] parameterReferences = processParameterReferences(method.getParameters());
-                try {
-                    injectedMethods.add(md);
-                    method.setAccessible(true);
-                    withMethod(method.getName(), parameterReferences);
-                } catch (NoSuchMethodException e) {
-                    throw new IllegalStateException(
-                            "Couldn't find method " + method.getName() + " that we had a reference for in class: "
-                                    + classToProcess.getName());
-                }
+                injectedMethods.add(md);
+                method.setAccessible(true);
             } else {
                 nonInjectedMethods.add(md);
             }
@@ -162,24 +170,16 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
         processMethodAnnotations(classToProcess.getSuperclass(), injectedMethods, nonInjectedMethods);
     }
 
-    private InjectableReference<?> processFieldParameterReference(final Field field) {
-        final Class<?> qualifierType = qualifierFromAnnotations(field.getAnnotations());
-
-        final Class<?> fieldType = field.getType();
-        if (qualifierType != null && !Named.class.equals(qualifierType)) {
-            return new NamedInjectableReference<>(qualifierType.getSimpleName(), fieldType);
-        } else {
-            final Named namedAnnotation = field.getAnnotation(Named.class);
-            if (namedAnnotation != null) {
-                return new NamedInjectableReference<>(namedAnnotation.value(), fieldType);
-            }
+    private InjectableReference<?> processFieldParameterReference(Field field) {
+        Annotation[] annotations = field.getAnnotations();
+        Named namedAnnotation = field.getAnnotation(Named.class);
+        Class<?> fieldType = field.getType();
+        boolean isProvider = fieldType.equals(Provider.class);
+        if (isProvider) {
+            fieldType = getProviderGenericType(field);
         }
 
-        if (supportsMulti(fieldType)) {
-            return new TypedMultiInjectableReference<>(fieldType);
-        }
-
-        return new TypedInjectableReference<>(fieldType);
+        return buildInjectableReference(fieldType, annotations, namedAnnotation, isProvider);
     }
 
     private void processPostConstructAnnotation() {
@@ -236,7 +236,7 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
         }
     }
 
-    private Constructor<?> findAnnotatedConstructor(final Constructor<?>[] constructors) {
+    private Constructor<?> findAnnotatedConstructor(Constructor<?>[] constructors) {
         Constructor<?> constructorToUse = null;
         for (final Constructor<?> c : constructors) {
             if (c.isAnnotationPresent(Inject.class)) {
@@ -257,8 +257,11 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
 
         private final Class<?>[] methodParameters;
 
-        public MethodDetails(String methodName, Class<?>[] methodParameters) {
-            this.methodName = methodName;
+        private final Method method;
+
+        public MethodDetails(Method method, Class<?>[] methodParameters) {
+            this.method = method;
+            this.methodName = method.getName();
             this.methodParameters = methodParameters;
         }
 

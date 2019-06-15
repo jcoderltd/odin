@@ -23,7 +23,7 @@ public class SimpleInjectionTest {
         public A(B b) {
             this.b = b;
         }
-        
+
         @PostConstruct
         void initialize() {
             System.out.println("A is initialized");
@@ -46,7 +46,7 @@ public class SimpleInjectionTest {
         context.initialize();
 
         A a = context.get(A.class);
-        
+
         System.out.println("A has a reference to B: " + a.b);
     }
 }
