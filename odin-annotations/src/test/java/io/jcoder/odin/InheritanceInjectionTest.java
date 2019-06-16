@@ -7,7 +7,6 @@ import static io.jcoder.odin.annotation.builder.AnnotationAwareRegistrationBuild
 import static io.jcoder.odin.builder.RegistrationBuilder.object;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 import javax.annotation.PostConstruct;
