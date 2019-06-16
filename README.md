@@ -1,0 +1,59 @@
+# Odin - A Dependency Injection Library
+
+Odin is an Object Dependency INjection library for Java applications. 
+
+## Important notes:
+
+- Odin is currently in alpha stage
+- We'll be adding more documentation as we go along
+- For the annotations module, support for javax.inject is provided for most features defined there.
+
+## Include in a Java project using Gradle:
+
+```java
+// if you want annotations support
+compile 'io.jcoder.odin:odin-annotations:0.1.0'
+
+// if you want only the core
+compile 'io.jcoder.odin:odin-core:0.1.0'
+```
+
+## Example usage:
+
+Assume you have 2 classes `A` and `B` where `A` depends on `B`:
+
+```java
+@Singleton
+public static class A {
+    private final B b;
+
+    public A(B b) {
+        this.b = b;
+    }
+    
+    @PostConstruct
+    void initialize() {
+        System.out.println("A is initialized");
+    }
+}
+
+@Singleton
+public static class B {
+    @PostConstruct
+    void initialize() {
+        System.out.println("B is initialized");
+    }
+}
+```
+ 
+Then, to create an injection context that manages `A` and `B` you would do the following:
+
+```java
+import static io.jcoder.odin.annotation.builder.AnnotationAwareRegistrationBuilder.annotated;
+
+InjectionContext context = new DefaultInjectionContext();
+context.register(annotated(A.class));
+context.register(annotated(B.class));
+context.initialize();
+```
+
