@@ -15,6 +15,7 @@ import io.jcoder.odin.ObjectCreationException;
 import io.jcoder.odin.builder.RegistrationBuilder;
 import io.jcoder.odin.function.ConstructionFunction;
 import io.jcoder.odin.function.InjectionFunction;
+import io.jcoder.odin.function.InjectionFunctionComparator;
 import io.jcoder.odin.function.PostConstructionFunction;
 import io.jcoder.odin.function.PreDestroyFunction;
 import io.jcoder.odin.reference.InjectableReference;
@@ -80,7 +81,7 @@ public final class InjectionRegistration<T> implements Comparable<InjectionRegis
         this.scopeType = scopeType;
         this.constructor = constructor;
         if (setters != null) {
-            this.setters = ImmutableList.sortedCopyOf((s1, s2) -> s1.priority() - s2.priority(), setters);
+            this.setters = ImmutableList.sortedCopyOf(new InjectionFunctionComparator(), setters);
         } else {
             this.setters = ImmutableList.of();
         }

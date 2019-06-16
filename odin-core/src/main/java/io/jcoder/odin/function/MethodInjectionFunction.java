@@ -4,8 +4,10 @@
 package io.jcoder.odin.function;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Optional;
 
 import io.jcoder.odin.InjectionContext;
 import io.jcoder.odin.InjectionFunctionException;
@@ -18,7 +20,7 @@ import io.jcoder.odin.reflection.MemberFinder;
  */
 public class MethodInjectionFunction<T> implements InjectionFunction<T> {
 
-    private final Class<T> type;
+    private final Class<? super T> type;
 
     private final Method method;
 
@@ -26,8 +28,9 @@ public class MethodInjectionFunction<T> implements InjectionFunction<T> {
 
     private final Class<?>[] parameterTypes;
 
-    public MethodInjectionFunction(final Class<T> type, final String methodName, final List<InjectableReference<?>> parameterReferences)
+    public MethodInjectionFunction(Class<? super T> type, String methodName, List<InjectableReference<?>> parameterReferences)
             throws NoSuchMethodException {
+
         this.type = type;
         this.parameterReferences = parameterReferences;
 
@@ -37,8 +40,8 @@ public class MethodInjectionFunction<T> implements InjectionFunction<T> {
     }
 
     @Override
-    public void apply(final InjectionContext context, final T injectionReceiver) {
-        final Object[] args = this.parameterReferences.stream()
+    public void apply(InjectionContext context, T injectionReceiver) {
+        Object[] args = this.parameterReferences.stream()
                 .map(paramRef -> paramRef.get(context))
                 .toArray(Object[]::new);
 
@@ -50,8 +53,8 @@ public class MethodInjectionFunction<T> implements InjectionFunction<T> {
     }
 
     @Override
-    public int priority() {
-        return 3;
+    public Optional<Member> member() {
+        return Optional.of(method);
     }
 
 }

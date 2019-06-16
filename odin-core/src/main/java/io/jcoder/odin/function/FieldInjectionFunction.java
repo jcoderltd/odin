@@ -4,6 +4,8 @@
 package io.jcoder.odin.function;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.util.Optional;
 
 import io.jcoder.odin.InjectionContext;
 import io.jcoder.odin.InjectionFunctionException;
@@ -22,7 +24,7 @@ public class FieldInjectionFunction<T> implements InjectionFunction<T> {
 
     private final InjectableReference<?> parameterReference;
 
-    public FieldInjectionFunction(final Class<? super T> type, final String fieldName, final InjectableReference<?> parameterReference)
+    public FieldInjectionFunction(Class<? super T> type, String fieldName, InjectableReference<?> parameterReference)
             throws NoSuchFieldException {
 
         this.type = type;
@@ -33,8 +35,8 @@ public class FieldInjectionFunction<T> implements InjectionFunction<T> {
     }
 
     @Override
-    public void apply(final InjectionContext context, final T injectionReceiver) {
-        final Object value = this.parameterReference.get(context);
+    public void apply(InjectionContext context, T injectionReceiver) {
+        Object value = this.parameterReference.get(context);
 
         try {
             field.set(injectionReceiver, value);
@@ -44,8 +46,8 @@ public class FieldInjectionFunction<T> implements InjectionFunction<T> {
     }
 
     @Override
-    public int priority() {
-        return 1;
+    public Optional<Member> member() {
+        return Optional.of(field);
     }
 
 }

@@ -3,6 +3,9 @@
  */
 package io.jcoder.odin.function;
 
+import java.lang.reflect.Member;
+import java.util.Optional;
+
 import io.jcoder.odin.InjectionContext;
 
 /**
@@ -20,5 +23,10 @@ public interface InjectionFunction<T> {
      */
     void apply(InjectionContext context, T injectionReceiver);
 
-    int priority();
+    /**
+     * The class member that'll be injected by this {@link InjectionFunction}
+     * 
+     * @return
+     */
+    Optional<Member> member();
 }

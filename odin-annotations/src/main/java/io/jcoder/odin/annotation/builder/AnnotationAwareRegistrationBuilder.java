@@ -12,9 +12,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -131,14 +133,14 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
     }
 
     private void processMethodAnnotations(Class<T> classToProcess) {
-        List<MethodDetails> injectedMethods = new ArrayList<>();
+        List<MethodDetails<T>> injectedMethods = new ArrayList<>();
         processMethodAnnotations(classToProcess, injectedMethods, new ArrayList<>());
 
-        for (int i = injectedMethods.size() - 1; i >= 0; i--) {
-            Method method = injectedMethods.get(i).method;
+        for (MethodDetails<T> injectedMethod : injectedMethods) {
+            Method method = injectedMethod.method;
             InjectableReference<?>[] parameterReferences = processParameterReferences(method.getParameters());
             try {
-                withMethod(method.getName(), parameterReferences);
+                withMethod(injectedMethod.declaringClass, method.getName(), parameterReferences);
             } catch (NoSuchMethodException e) {
                 throw new IllegalStateException(
                         "Couldn't find method " + method.getName() + " that we had a reference for in class: "
@@ -146,16 +148,16 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
             }
         }
     }
-    
-    private void processMethodAnnotations(Class<? super T> classToProcess, List<MethodDetails> injectedMethods,
-            List<MethodDetails> nonInjectedMethods) {
+
+    private void processMethodAnnotations(Class<? super T> classToProcess, List<MethodDetails<T>> injectedMethods,
+            List<MethodDetails<T>> nonInjectedMethods) {
 
         if (classToProcess == null) {
             return;
         }
 
         for (final Method method : classToProcess.getDeclaredMethods()) {
-            final MethodDetails md = new MethodDetails(method, method.getParameterTypes());
+            final MethodDetails<T> md = new MethodDetails<T>(classToProcess, method, method.getParameterTypes());
             if (injectedMethods.contains(md) || nonInjectedMethods.contains(md)) {
                 continue;
             }
@@ -252,28 +254,45 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
         return constructorToUse;
     }
 
-    private static class MethodDetails {
+    private static class MethodDetails<T> {
+        private final Class<? super T> declaringClass;
+
         private final String methodName;
 
         private final Class<?>[] methodParameters;
 
+        private final String visibilityLevelName;
+
         private final Method method;
 
-        public MethodDetails(Method method, Class<?>[] methodParameters) {
+        public MethodDetails(Class<? super T> declaringClass, Method method, Class<?>[] methodParameters) {
+            this.declaringClass = declaringClass;
             this.method = method;
             this.methodName = method.getName();
             this.methodParameters = methodParameters;
+            int modifiers = method.getModifiers();
+            // Package private methods in different packages don't override each other :/
+            boolean methodHasDefaultVisibility = !Modifier.isPublic(modifiers) && !Modifier.isProtected(modifiers)
+                    && !Modifier.isPrivate(modifiers);
+            if (Modifier.isPrivate(modifiers)) {
+                this.visibilityLevelName = declaringClass.getName();
+            } else if (methodHasDefaultVisibility) {
+                this.visibilityLevelName = declaringClass.getPackage().getName();
+            } else {
+                this.visibilityLevelName = null;
+            }
         }
 
         @Override
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + ((methodName == null) ? 0 : methodName.hashCode());
+            result = prime * result + Objects.hash(methodName, visibilityLevelName);
             result = prime * result + Arrays.hashCode(methodParameters);
             return result;
         }
 
+        @SuppressWarnings("rawtypes")
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
@@ -282,21 +301,12 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
             if (obj == null) {
                 return false;
             }
-            if (getClass() != obj.getClass()) {
+            if (!(obj instanceof MethodDetails)) {
                 return false;
             }
             MethodDetails other = (MethodDetails) obj;
-            if (methodName == null) {
-                if (other.methodName != null) {
-                    return false;
-                }
-            } else if (!methodName.equals(other.methodName)) {
-                return false;
-            }
-            if (!Arrays.equals(methodParameters, other.methodParameters)) {
-                return false;
-            }
-            return true;
+            return Objects.equals(methodName, other.methodName) && Arrays.equals(methodParameters, other.methodParameters)
+                    && Objects.equals(visibilityLevelName, other.visibilityLevelName);
         }
 
     }

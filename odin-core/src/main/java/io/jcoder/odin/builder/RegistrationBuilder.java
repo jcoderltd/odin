@@ -220,7 +220,7 @@ public class RegistrationBuilder<T> {
     public <O> RegistrationBuilder<T> withField(Class<? super T> baseClass, String fieldName, ReferenceBuilder<?> parameterReference)
             throws NoSuchFieldException {
 
-        return this.withField(fieldName, parameterReference.build());
+        return this.withField(baseClass, fieldName, parameterReference.build());
     }
 
     public <O> RegistrationBuilder<T> withMethod(String methodName, InjectableReference<?>... parameterReferences)
@@ -233,6 +233,20 @@ public class RegistrationBuilder<T> {
             throws NoSuchMethodException {
 
         return this.withMethod(methodName,
+                Stream.of(parameterReferences).map(ReferenceBuilder::build).toArray(InjectableReference<?>[]::new));
+    }
+
+    public <O> RegistrationBuilder<T> withMethod(Class<? super T> baseClass, String methodName,
+            InjectableReference<?>... parameterReferences) throws NoSuchMethodException {
+
+        this.injectionFunctions.add(new MethodInjectionFunction<>(baseClass, methodName, Arrays.asList(parameterReferences)));
+        return this;
+    }
+
+    public <O> RegistrationBuilder<T> withMethod(Class<? super T> baseClass, String methodName, ReferenceBuilder<?>... parameterReferences)
+            throws NoSuchMethodException {
+
+        return this.withMethod(baseClass, methodName,
                 Stream.of(parameterReferences).map(ReferenceBuilder::build).toArray(InjectableReference<?>[]::new));
     }
 

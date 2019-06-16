@@ -99,8 +99,7 @@ public class InheritanceInjectionTest {
         SubB b = context.get(SubB.class);
         assertNotNull(b);
 
-        // a2 shouldn't be set as that method is hidden by the subclass
-        assertNull(b.a2);
+        assertNotNull(b.a2);
         assertNotNull(b.subA2);
 
         assertNotNull(b.a);

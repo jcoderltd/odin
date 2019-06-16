@@ -26,63 +26,61 @@ import io.jcoder.odin.annotation.component.DefaultComponentRegistrar;
 import io.jcoder.odin.annotation.component.Registration;
 import junit.framework.Test;
 
+/**
+ * Odin TCK test class that also includes private injection.
+ * 
+ * <p>
+ * Static injection is not supported by Odin
+ * 
+ * @author Camilo Gonzalez
+ */
 public class OdinTck {
-    
-    /**
-     * org.atinject.tck.auto.Car is implemented by Convertible. 
-        •@Drivers Seat isimplemented by DriversSeat. 
-        •Seat isimplemented by Seat itself, and Tire by Tire itself(not subclasses). 
-        •Engine is implemented by V8Engine. 
-        •@Named("spare") Tire is implemented by SpareTire. 
-        •The following classes may also be injected directly: Cupholder, SpareTire, and FuelTank. 
-        Static and private member injection support is optional, but if yourinjector supports those features, it must pass the respective tests. Ifstatic member injection is supported, the static members of the followingtypes shall also be injected once: Convertible, Tire, and SpareTire. 
-     */
-    
+
     @Component
     public static class OdinCarComponent {
         @Inject
         @Registration
         private Convertible car;
-        
+
         @Inject
         @Registration
         private Seat seat;
-        
+
         @Inject
         @Registration
         private Tire tire;
-        
+
         @Inject
         @Registration
         private V8Engine engine;
-        
+
         @Inject
         @Registration
         private Cupholder cupholder;
-        
+
         @Inject
         @Registration
         private FuelTank fuelTank;
-        
+
         @Inject
         @Registration
         @Drivers
         private DriversSeat driversSeat;
-        
+
         @Inject
         @Registration
         @Named("spare")
         private SpareTire spareTire;
     }
-    
+
     public static Test suite() {
         InjectionContext injectionContext = new DefaultInjectionContext();
         ComponentRegistrar componentRegistrar = new DefaultComponentRegistrar(injectionContext);
         componentRegistrar.addComponent(OdinCarComponent.class);
         componentRegistrar.initialize();
-        
+
         Car car = injectionContext.get(Car.class);
-        
-        return Tck.testsFor(car, false, false);
+
+        return Tck.testsFor(car, false, true);
     }
 }

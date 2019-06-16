@@ -11,7 +11,7 @@ allprojects {
 	apply plugin: 'signing'
 	
 	group = 'io.jcoder.odin'
-	version = '0.1.1-SNAPSHOT'
+	version = '0.1.0-SNAPSHOT'
 
 	repositories {
 		maven {
