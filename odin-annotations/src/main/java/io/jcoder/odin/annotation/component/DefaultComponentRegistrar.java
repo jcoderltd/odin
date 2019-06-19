@@ -1,5 +1,17 @@
-/*
- * Copyright 2018 - JCoder Ltd
+/**
+ *  Copyright 2019 JCoder Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package io.jcoder.odin.annotation.component;
 
@@ -20,10 +32,9 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-
 import io.jcoder.odin.DefaultInjectionContext;
 import io.jcoder.odin.InjectionContext;
+import io.jcoder.odin.base.Preconditions;
 import io.jcoder.odin.builder.RegistrationBuilder;
 
 /**
@@ -47,7 +58,7 @@ public class DefaultComponentRegistrar implements ComponentRegistrar {
     }
 
     public DefaultComponentRegistrar(final InjectionContext context) {
-        Preconditions.checkNotNull(context, "The provided InjectionContext must not be null");
+        Preconditions.verifyNotNull(context, "The provided InjectionContext must not be null");
 
         this.context = context;
     }
@@ -59,7 +70,7 @@ public class DefaultComponentRegistrar implements ComponentRegistrar {
 
     @Override
     public void addComponent(Class<?> componentToRegister) {
-        Preconditions.checkState(!initialized, "This registrar has already been initialized, no further components might be added");
+        Preconditions.verifyState(!initialized, "This registrar has already been initialized, no further components might be added");
 
         getDependencies(componentToRegister, true);
 
@@ -97,9 +108,9 @@ public class DefaultComponentRegistrar implements ComponentRegistrar {
                     Named namedAnnotation = field.getAnnotation(Named.class);
                     boolean isSingleton = field.isAnnotationPresent(Singleton.class);
                     RegistrationBuilder<?> builder = annotated(field.getType());
-                    
+
                     processBuilder(builder, isSingleton, namedAnnotation, qualifier);
-                    
+
                     context.register(builder);
                 } catch (Exception e) {
                     throw new ComponentRegistrationException(
@@ -117,7 +128,7 @@ public class DefaultComponentRegistrar implements ComponentRegistrar {
                 Named namedAnnotation = method.getAnnotation(Named.class);
                 boolean isSingleton = method.isAnnotationPresent(Singleton.class);
                 RegistrationBuilder<?> builder = type(classToRegister);
-                
+
                 processBuilder(builder, isSingleton, namedAnnotation, qualifier);
 
                 try {
@@ -136,11 +147,11 @@ public class DefaultComponentRegistrar implements ComponentRegistrar {
         if (isSingleton) {
             builder.asSingleton();
         }
-        
+
         if (namedAnnotation != null) {
             builder.named(namedAnnotation.value());
         }
-        
+
         if (namedAnnotation == null && qualifier != null && !qualifier.equals(Named.class)) {
             builder.qualifiedBy(qualifier.getName());
         }

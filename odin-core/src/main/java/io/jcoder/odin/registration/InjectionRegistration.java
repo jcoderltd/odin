@@ -1,5 +1,17 @@
-/*
- * Copyright 2018 - JCoder Ltd
+/**
+ *  Copyright 2019 JCoder Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package io.jcoder.odin.registration;
 
@@ -7,11 +19,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Objects;
 
-import com.google.common.collect.ImmutableList;
-
 import io.jcoder.odin.DefaultInjectionContext.UnscopedInstanceScope;
 import io.jcoder.odin.InjectionContext;
 import io.jcoder.odin.ObjectCreationException;
+import io.jcoder.odin.base.ImmutableList;
 import io.jcoder.odin.builder.RegistrationBuilder;
 import io.jcoder.odin.function.ConstructionFunction;
 import io.jcoder.odin.function.InjectionFunction;
@@ -24,15 +35,15 @@ import io.jcoder.odin.scope.SingletonScope;
 
 /**
  * Represents the registration of a class or object inside an {@link InjectionContext}.
- * 
+ *
  * <p>
  * In general, users can build an {@link InjectionRegistration} making use of the {@link RegistrationBuilder} helper
  * class.
- * 
+ *
  * <p>
  * An {@link InjectionRegistration} contains the different details that should be managed by the
  * {@link InjectionContext} on behalf of the user, including {@link InjectionRegistration} should detail:
- * 
+ *
  * <ul>
  * <li><b>Construction:</b> How to construct an object if this registration is represented by a <code>class</code>.
  * Construction details are not required when the {@link InjectionRegistration} is for an object that has already been
@@ -44,7 +55,7 @@ import io.jcoder.odin.scope.SingletonScope;
  * destroyed by the container. In a similar way to Java's <code>finalize</code> method, users shouldn't rely on this
  * object being invoked.</li>
  * </ul>
- * 
+ *
  * <p>
  * {@link InjectionRegistration} objects are immutable.
  *
@@ -101,7 +112,7 @@ public final class InjectionRegistration<T> implements Comparable<InjectionRegis
         this.scopeType = SingletonScope.class;
         this.constructor = null;
         if (setters != null) {
-            this.setters = ImmutableList.copyOf(setters);
+            this.setters = ImmutableList.sortedCopyOf(new InjectionFunctionComparator(), setters);
         } else {
             this.setters = ImmutableList.of();
         }

@@ -1,4 +1,4 @@
-/**
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><templates><template autoinsert="false" context="filecomment_context" deleted="false" description="Comment for created Java files" enabled="true" id="org.eclipse.jdt.ui.text.codetemplates.filecomment" name="filecomment">/**
  *  Copyright 2019 JCoder Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,27 +12,4 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- */
-package io.jcoder.odin.annotation;
-
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import javax.inject.Scope;
-
-import io.jcoder.odin.scope.InstanceScope;
-
-@Retention(RUNTIME)
-@Target({ TYPE, METHOD })
-@Scope
-/**
- *
- * @author Camilo Gonzalez
- */
-public @interface ScopedTo {
-    public Class<? extends InstanceScope> value();
-}
+ */</template></templates>

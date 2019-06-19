@@ -13,26 +13,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package io.jcoder.odin.annotation;
+package io.jcoder.odin.base;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import javax.inject.Scope;
-
-import io.jcoder.odin.scope.InstanceScope;
-
-@Retention(RUNTIME)
-@Target({ TYPE, METHOD })
-@Scope
 /**
  *
  * @author Camilo Gonzalez
  */
-public @interface ScopedTo {
-    public Class<? extends InstanceScope> value();
+public final class Preconditions {
+    private Preconditions() {
+    }
+
+    public static <T> void verifyNotNull(T obj, String errorMsg) {
+        if (obj == null) {
+            throw new NullPointerException(errorMsg);
+        }
+    }
+
+    public static <T> void verifyArgumentCondition(boolean condition, String errorMsg) {
+        if (!condition) {
+            throw new IllegalArgumentException(errorMsg);
+        }
+    }
+
+    public static <T> void verifyState(boolean stateCondition, String errorMsg) {
+        if (!stateCondition) {
+            throw new IllegalStateException(errorMsg);
+        }
+    }
 }

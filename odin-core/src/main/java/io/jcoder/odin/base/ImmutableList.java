@@ -13,26 +13,29 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package io.jcoder.odin.annotation;
+package io.jcoder.odin.base;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import javax.inject.Scope;
-
-import io.jcoder.odin.scope.InstanceScope;
-
-@Retention(RUNTIME)
-@Target({ TYPE, METHOD })
-@Scope
 /**
  *
  * @author Camilo Gonzalez
  */
-public @interface ScopedTo {
-    public Class<? extends InstanceScope> value();
+public final class ImmutableList {
+
+    private ImmutableList() {
+    }
+
+    public static <T> List<T> of() {
+        return Collections.emptyList();
+    }
+
+    public static <T> List<T> sortedCopyOf(Comparator<? super T> comparator, Collection<? extends T> sourceList) {
+        return Collections.unmodifiableList(sourceList.stream().sorted(comparator).collect(Collectors.toList()));
+    }
+
 }

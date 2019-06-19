@@ -1,5 +1,17 @@
-/*
- * Copyright 2018 - JCoder Ltd
+/**
+ *  Copyright 2019 JCoder Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package io.jcoder.odin.builder;
 
@@ -12,10 +24,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.base.Preconditions;
-
 import io.jcoder.odin.DefaultInjectionContext.UnscopedInstanceScope;
 import io.jcoder.odin.InjectionContext;
+import io.jcoder.odin.base.Preconditions;
 import io.jcoder.odin.function.ClassConstructorFunction;
 import io.jcoder.odin.function.ConstructionFunction;
 import io.jcoder.odin.function.FactoryMethodConstructionFunction;
@@ -62,7 +73,7 @@ public class RegistrationBuilder<T> {
     private Class<? extends InstanceScope> scopeType;
 
     public RegistrationBuilder(Class<T> classToRegister) {
-        Preconditions.checkNotNull(classToRegister, "The provided class must not be null");
+        Preconditions.verifyNotNull(classToRegister, "The provided class must not be null");
         this.name = classToRegister.getName();
         this.classToRegister = classToRegister;
         this.scopeType = UnscopedInstanceScope.class;
@@ -71,7 +82,7 @@ public class RegistrationBuilder<T> {
 
     @SuppressWarnings("unchecked")
     public RegistrationBuilder(T registeredObject) {
-        Preconditions.checkNotNull(registeredObject, "The provided object must not be null");
+        Preconditions.verifyNotNull(registeredObject, "The provided object must not be null");
         this.objectToRegister = Optional.of(registeredObject);
         this.scopeType = SingletonScope.class;
         this.classToRegister = (Class<T>) registeredObject.getClass();
@@ -300,13 +311,13 @@ public class RegistrationBuilder<T> {
     }
 
     public RegistrationBuilder<T> named(String name) {
-        Preconditions.checkNotNull(name, "Registration name must not be null");
+        Preconditions.verifyNotNull(name, "Registration name must not be null");
         this.name = name;
         return this;
     }
 
     public RegistrationBuilder<T> qualifiedBy(String qualifierName) {
-        Preconditions.checkNotNull(qualifierName, "When provided, the qualifier name must not be null");
+        Preconditions.verifyNotNull(qualifierName, "When provided, the qualifier name must not be null");
         this.qualifierName = qualifierName;
         return this;
     }
