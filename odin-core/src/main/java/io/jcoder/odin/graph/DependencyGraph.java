@@ -1,5 +1,17 @@
-/*
- * Copyright 2018 - JCoder Ltd
+/**
+ *  Copyright 2019 JCoder Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package io.jcoder.odin.graph;
 
@@ -12,9 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Preconditions;
-
 import io.jcoder.odin.InjectionContext;
+import io.jcoder.odin.base.Preconditions;
 import io.jcoder.odin.registration.InjectionRegistration;
 
 /**
@@ -31,7 +42,7 @@ public class DependencyGraph {
     private final Map<InjectionRegistration<?>, Node> nodeMap;
 
     public DependencyGraph(InjectionContext context, DependencyProvider provider) {
-        Preconditions.checkNotNull(context, "The provided injection context must not be null");
+        Preconditions.verifyNotNull(context, "The provided injection context must not be null");
         this.context = context;
 
         this.registrations = context.getRegistrations();
@@ -100,7 +111,7 @@ public class DependencyGraph {
 
         public Cycle(List<Node> path, Node lastNode) {
             final int idx = path.indexOf(lastNode);
-            Preconditions.checkArgument(idx >= 0, "The provided node for the cycle wasn't found in the given path");
+            Preconditions.verifyArgumentCondition(idx >= 0, "The provided node for the cycle wasn't found in the given path");
 
             cyclePath.addAll(path.subList(idx, path.size()));
             cyclePath.add(lastNode);

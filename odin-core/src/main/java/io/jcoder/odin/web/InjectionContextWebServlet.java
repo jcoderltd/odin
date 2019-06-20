@@ -1,5 +1,17 @@
-/*
- * Copyright 2018 - JCoder Ltd
+/**
+ *  Copyright 2019 JCoder Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package io.jcoder.odin.web;
 
@@ -7,6 +19,8 @@ import static io.jcoder.odin.builder.ReferenceBuilder.ofType;
 import static io.jcoder.odin.builder.RegistrationBuilder.singleton;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,10 +38,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
-
 import io.jcoder.odin.InjectionContext;
+import io.jcoder.odin.base.Preconditions;
 import io.jcoder.odin.builder.ReferenceBuilder;
 import io.jcoder.odin.reference.InjectableReference;
 import io.jcoder.odin.web.aop.HttpServletInterceptor;
@@ -55,7 +67,7 @@ public abstract class InjectionContextWebServlet extends HttpServlet {
 
     private final List<HttpServletInterceptorRegistration<?>> interceptors = new CopyOnWriteArrayList<>();
 
-    private final Set<Servlet> initializedServlets = Sets.newIdentityHashSet();
+    private final Set<Servlet> initializedServlets = Collections.newSetFromMap(new IdentityHashMap<>());
 
     private ServletConfig config;
 
@@ -74,8 +86,8 @@ public abstract class InjectionContextWebServlet extends HttpServlet {
 
             this.context.register(singleton(DefaultResourceDispatchServlet.class));
 
-            Preconditions.checkNotNull(this.context, "The InjectionContext is null");
-            Preconditions.checkArgument(this.context.initialized(), "The InjectionContext needs to be initialized");
+            Preconditions.verifyNotNull(this.context, "The InjectionContext is null");
+            Preconditions.verifyArgumentCondition(this.context.initialized(), "The InjectionContext needs to be initialized");
 
             this.registerServlets(this.context);
         } catch (final Exception ex) {
@@ -91,7 +103,7 @@ public abstract class InjectionContextWebServlet extends HttpServlet {
             request = ((ServletCallerHttpServletRequest) req).getRequest();
             setRequestScope = false;
         } else {
-            request = (HttpServletRequest) req;
+            request = req;
             setRequestScope = true;
         }
         if (logger.isDebugEnabled()) {

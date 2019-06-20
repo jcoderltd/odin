@@ -1,5 +1,17 @@
-/*
- * Copyright 2018 - JCoder Ltd
+/**
+ *  Copyright 2019 JCoder Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package io.jcoder.odin.reference;
 
@@ -14,9 +26,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
-import com.google.common.base.Preconditions;
-
 import io.jcoder.odin.InjectionContext;
+import io.jcoder.odin.base.Preconditions;
 import io.jcoder.odin.registration.InjectionRegistration;
 
 /**
@@ -46,10 +57,12 @@ public class TypedMultiInjectableReference<T> extends NullableInjectableReferenc
         boolean isCollection = Collection.class.isAssignableFrom(referencedClass);
 
         if (!isArray) {
-            Preconditions.checkArgument(isCollection,
+            Preconditions.verifyArgumentCondition(isCollection,
                     "The provided class must be a Collection or an Array to be able to inject multiple instances");
-            Preconditions.checkArgument(isCollection && genericType != null, "A generic type must be provided for Collection types");
-            Preconditions.checkArgument(isCollection && collectionSupplier != null, "A supplier must be provided for Collection types");
+            Preconditions.verifyArgumentCondition(isCollection && genericType != null,
+                    "A generic type must be provided for Collection types");
+            Preconditions.verifyArgumentCondition(isCollection && collectionSupplier != null,
+                    "A supplier must be provided for Collection types");
         }
 
         this.referencedClass = referencedClass;

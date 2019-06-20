@@ -1,5 +1,17 @@
-/*
- * Copyright 2018 - JCoder Ltd
+/**
+ *  Copyright 2019 JCoder Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package io.jcoder.odin.function;
 
@@ -8,10 +20,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import com.google.common.base.Preconditions;
-
 import io.jcoder.odin.ConstructionFunctionException;
 import io.jcoder.odin.InjectionContext;
+import io.jcoder.odin.base.Preconditions;
 import io.jcoder.odin.reference.InjectableReference;
 
 /**
@@ -31,9 +42,9 @@ public class FactoryMethodConstructionFunction<T> implements ConstructionFunctio
     public FactoryMethodConstructionFunction(final Class<T> typeToConstruct, final Class<?> factoryType, final String staticMethodName,
             final List<InjectableReference<?>> parameterReferences)
             throws NoSuchMethodException {
-        Preconditions.checkNotNull(typeToConstruct, "The type to construct must not be null");
-        Preconditions.checkNotNull(factoryType, "The factory type must not be null");
-        Preconditions.checkNotNull(staticMethodName, "The static method name must not be null");
+        Preconditions.verifyNotNull(typeToConstruct, "The type to construct must not be null");
+        Preconditions.verifyNotNull(factoryType, "The factory type must not be null");
+        Preconditions.verifyNotNull(staticMethodName, "The static method name must not be null");
 
         this.factoryType = factoryType;
         this.parameterReferences = parameterReferences;
@@ -42,8 +53,8 @@ public class FactoryMethodConstructionFunction<T> implements ConstructionFunctio
         this.method = this.factoryType.getDeclaredMethod(staticMethodName, parameterTypes);
         this.method.setAccessible(true);
 
-        Preconditions.checkArgument(Modifier.isStatic(this.method.getModifiers()), "The provided method must be static");
-        Preconditions.checkArgument(typeToConstruct.isAssignableFrom(this.method.getReturnType()),
+        Preconditions.verifyArgumentCondition(Modifier.isStatic(this.method.getModifiers()), "The provided method must be static");
+        Preconditions.verifyArgumentCondition(typeToConstruct.isAssignableFrom(this.method.getReturnType()),
                 "Cannot assign " + typeToConstruct.getName() + " from the method return type: " + this.method.getReturnType().getName());
     }
 

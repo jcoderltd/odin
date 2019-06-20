@@ -1,5 +1,17 @@
-/*
- * Copyright 2018 - JCoder Ltd
+/**
+ *  Copyright 2019 JCoder Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package io.jcoder.odin.annotation.builder;
 
@@ -25,13 +37,12 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import com.google.common.base.Preconditions;
-
 import io.jcoder.odin.DestructionException;
 import io.jcoder.odin.InitializationException;
 import io.jcoder.odin.annotation.RequestScoped;
 import io.jcoder.odin.annotation.ScopedTo;
 import io.jcoder.odin.annotation.component.Component;
+import io.jcoder.odin.base.Preconditions;
 import io.jcoder.odin.builder.RegistrationBuilder;
 import io.jcoder.odin.reference.InjectableReference;
 import io.jcoder.odin.web.RequestScope;
@@ -74,7 +85,8 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
             scopedTo(RequestScope.class);
         } else if (classToRegister.isAnnotationPresent(ScopedTo.class)) {
             ScopedTo scopedToAnnotation = classToRegister.getAnnotation(ScopedTo.class);
-            Preconditions.checkNotNull("A scope type must be declared in the ScopedTo annotation of class: " + classToRegister);
+            Preconditions.verifyNotNull(scopedToAnnotation,
+                    "A scope type must be declared in the ScopedTo annotation of class: " + classToRegister);
             scopedTo(scopedToAnnotation.value());
         }
     }
@@ -193,8 +205,8 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
                 }
                 postConstructMethodFound = true;
 
-                Preconditions.checkArgument(method.getParameterCount() == 0, "The PostConstruct method must not have parameters");
-                Preconditions.checkArgument(method.getReturnType().equals(void.class),
+                Preconditions.verifyArgumentCondition(method.getParameterCount() == 0, "The PostConstruct method must not have parameters");
+                Preconditions.verifyArgumentCondition(method.getReturnType().equals(void.class),
                         "The PostConstruct method must have a void return type");
 
                 method.setAccessible(true);
@@ -220,8 +232,8 @@ public class AnnotationAwareRegistrationBuilder<T> extends RegistrationBuilder<T
                 }
                 preDestroyMethodFound = true;
 
-                Preconditions.checkArgument(method.getParameterCount() == 0, "The PreDestroy method must not have parameters");
-                Preconditions.checkArgument(method.getReturnType().equals(void.class),
+                Preconditions.verifyArgumentCondition(method.getParameterCount() == 0, "The PreDestroy method must not have parameters");
+                Preconditions.verifyArgumentCondition(method.getReturnType().equals(void.class),
                         "The PreDestroy method must have a void return type");
 
                 method.setAccessible(true);
