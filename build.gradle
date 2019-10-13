@@ -16,7 +16,7 @@ allprojects {
 	apply plugin: "license"
 	
 	group = 'io.jcoder.odin'
-	version = '0.2.0'
+	version = '0.2.1'
 
 	repositories {
 		maven {
@@ -30,6 +30,7 @@ allprojects {
 	license {
 		header rootProject.file("./devconf/LICENSE_HEADER")
 		include "**/*.java"
+		exclude "**/package-info.java"
 	}
 	
 	publishing {

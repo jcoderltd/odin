@@ -25,9 +25,6 @@ targetCompatibility = 1.8
 
 javadoc {
 	title "Odin Annotations"
-	options {
-		bottom "Copyright \u00a9 2018, 2019 JCoder Ltd."
-	}
 }
 
 task sourceJar(type: Jar) {
