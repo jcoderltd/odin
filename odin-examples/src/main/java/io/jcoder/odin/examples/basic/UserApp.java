@@ -32,8 +32,6 @@ public class UserApp {
         context.register(annotated(UserService.class));
         context.register(annotated(UserRepository.class));
         context.initialize();
-
-        
         
         UserService userService = context.get(UserService.class);
         User user = new User(1, "abc@somedomain.com", "User Name");

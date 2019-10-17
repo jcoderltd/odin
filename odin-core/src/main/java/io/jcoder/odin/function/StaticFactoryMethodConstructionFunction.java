@@ -17,6 +17,7 @@ package io.jcoder.odin.function;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 import io.jcoder.odin.ConstructionFunctionException;
@@ -28,9 +29,9 @@ import io.jcoder.odin.reference.InjectableReference;
  *
  * @author Camilo Gonzalez
  */
-public class FactoryMethodConstructionFunction<T> implements ConstructionFunction<T> {
+public class StaticFactoryMethodConstructionFunction<T> implements ConstructionFunction<T> {
 
-    private final InjectableReference<?> factoryReference;
+    private final Class<?> factoryType;
 
     private final Method method;
 
@@ -38,21 +39,21 @@ public class FactoryMethodConstructionFunction<T> implements ConstructionFunctio
 
     private final Class<?>[] parameterTypes;
 
-    public FactoryMethodConstructionFunction(final Class<T> typeToConstruct, final InjectableReference<?> factoryReference,
-            final String methodName,
+    public StaticFactoryMethodConstructionFunction(final Class<T> typeToConstruct, final Class<?> factoryType, final String staticMethodName,
             final List<InjectableReference<?>> parameterReferences)
             throws NoSuchMethodException {
         Preconditions.verifyNotNull(typeToConstruct, "The type to construct must not be null");
-        Preconditions.verifyNotNull(factoryReference, "The factory reference must not be null");
-        Preconditions.verifyNotNull(methodName, "The method name must not be null");
+        Preconditions.verifyNotNull(factoryType, "The factory type must not be null");
+        Preconditions.verifyNotNull(staticMethodName, "The static method name must not be null");
 
-        this.factoryReference = factoryReference;
+        this.factoryType = factoryType;
         this.parameterReferences = parameterReferences;
 
         this.parameterTypes = parameterReferences.stream().map(ref -> ref.getInjectableType()).toArray(Class<?>[]::new);
-        this.method = this.factoryReference.getInjectableType().getMethod(methodName, parameterTypes);
+        this.method = this.factoryType.getDeclaredMethod(staticMethodName, parameterTypes);
         this.method.setAccessible(true);
 
+        Preconditions.verifyArgumentCondition(Modifier.isStatic(this.method.getModifiers()), "The provided method must be static");
         Preconditions.verifyArgumentCondition(typeToConstruct.isAssignableFrom(this.method.getReturnType()),
                 "Cannot assign " + typeToConstruct.getName() + " from the method return type: " + this.method.getReturnType().getName());
     }
@@ -62,17 +63,14 @@ public class FactoryMethodConstructionFunction<T> implements ConstructionFunctio
     public T newObject(final InjectionContext context)
             throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
-        final Object factoryInstance = factoryReference.get(context);
-
         final Object[] args = this.parameterReferences.stream()
                 .map(paramRef -> paramRef.get(context))
                 .toArray(Object[]::new);
 
         try {
-            return (T) method.invoke(factoryInstance, args);
+            return (T) method.invoke(null, args);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            throw new ConstructionFunctionException(this,
-                    "Method " + method.getName() + " of class " + factoryReference.getInjectableType().getName(), e);
+            throw new ConstructionFunctionException(this, "Method " + method.getName() + " of class " + factoryType.getName(), e);
         }
     }
 

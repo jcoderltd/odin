@@ -19,6 +19,7 @@ import static io.jcoder.odin.annotation.builder.AnnotationAwareRegistrationBuild
 import static io.jcoder.odin.annotation.reflection.AnnotationUtils.processParameterReferences;
 import static io.jcoder.odin.annotation.reflection.AnnotationUtils.qualifierFromAnnotations;
 import static io.jcoder.odin.builder.RegistrationBuilder.type;
+import static io.jcoder.odin.builder.ReferenceBuilder.ofType;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -103,7 +104,7 @@ public class DefaultComponentRegistrar implements ComponentRegistrar {
         for (Field field : component.getDeclaredFields()) {
             if (field.isAnnotationPresent(Registration.class)) {
                 try {
-                    logger.debug("Registering annotated: " + field.getType());
+                    logger.debug("Registering annotated: {}", field.getType());
                     Class<?> qualifier = qualifierFromAnnotations(field.getDeclaredAnnotations());
                     Named namedAnnotation = field.getAnnotation(Named.class);
                     boolean isSingleton = field.isAnnotationPresent(Singleton.class);
@@ -120,7 +121,7 @@ public class DefaultComponentRegistrar implements ComponentRegistrar {
         }
 
         for (Method method : component.getDeclaredMethods()) {
-            if (Modifier.isStatic(method.getModifiers()) && method.isAnnotationPresent(Registration.class)) {
+            if (method.isAnnotationPresent(Registration.class)) {
                 method.setAccessible(true);
 
                 Class<?> classToRegister = method.getReturnType();
@@ -132,8 +133,12 @@ public class DefaultComponentRegistrar implements ComponentRegistrar {
                 processBuilder(builder, isSingleton, namedAnnotation, qualifier);
 
                 try {
-                    builder.withFactory(component, method.getName(), processParameterReferences(method.getParameters()));
-                    logger.debug("Registering: " + builder);
+                    if(Modifier.isStatic(method.getModifiers())) {
+                        builder.withStaticFactory(component, method.getName(), processParameterReferences(method.getParameters()));
+                    } else {
+                        builder.withFactory(ofType(component).build(), method.getName(), processParameterReferences(method.getParameters()));
+                    }
+                    logger.debug("Registering: {}", builder);
                     context.register(builder);
                 } catch (NoSuchMethodException e) {
                     throw new ComponentRegistrationException(

@@ -53,7 +53,7 @@ import io.jcoder.odin.scope.SingletonScope;
  * they've been constructed and all injections have been performed.</li>
  * <li><b>Pre Destroy Function:</b> [Optional] Function that should be invoked in a managed object before they're
  * destroyed by the container. In a similar way to Java's <code>finalize</code> method, users shouldn't rely on this
- * object being invoked.</li>
+ * function being invoked.</li>
  * </ul>
  *
  * <p>

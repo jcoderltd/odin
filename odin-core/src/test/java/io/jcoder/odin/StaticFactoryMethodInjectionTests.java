@@ -16,7 +16,6 @@
 package io.jcoder.odin;
 
 import static io.jcoder.odin.builder.ReferenceBuilder.paramOfType;
-import static io.jcoder.odin.builder.ReferenceBuilder.ofType;
 import static io.jcoder.odin.builder.RegistrationBuilder.singleton;
 import static io.jcoder.odin.builder.RegistrationBuilder.type;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,7 +31,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Camilo Gonzalez
  */
-public class FactoryMethodInjectionTests {
+public class StaticFactoryMethodInjectionTests {
 
     public interface Base {
     }
@@ -58,16 +57,14 @@ public class FactoryMethodInjectionTests {
 
     }
 
-    public static class TestFactory {
+    public static class E extends D {
 
-        private final List<Base> baseObjects;
-
-        public TestFactory(final List<Base> baseObjects) {
-            this.baseObjects = baseObjects;
+        public E(final List<Base> baseObjects, final C cObject) {
+            super(baseObjects, cObject);
         }
 
-        public D create(C cObject) {
-            return new D(baseObjects, cObject);
+        public static E create(final List<Base> baseObjects, final C cObject) {
+            return new E(baseObjects, cObject);
         }
     }
 
@@ -78,8 +75,10 @@ public class FactoryMethodInjectionTests {
         context.register(singleton(A.class));
         context.register(type(B.class));
         context.register(singleton(C.class));
-        context.register(singleton(TestFactory.class).withConstructor(ofType(List.class).multi().ofGenericType(Base.class)));
-        context.register(singleton(D.class).withFactory(ofType(TestFactory.class), "create", ofType(C.class)));
+        context.register(singleton(D.class)
+                .withStaticFactory(E.class, "create",
+                        paramOfType(List.class).multi().ofGenericType(Base.class),
+                        paramOfType(C.class)));
 
         context.initialize();
 

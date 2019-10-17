@@ -30,6 +30,7 @@ import io.jcoder.odin.base.Preconditions;
 import io.jcoder.odin.function.ClassConstructorFunction;
 import io.jcoder.odin.function.ConstructionFunction;
 import io.jcoder.odin.function.FactoryMethodConstructionFunction;
+import io.jcoder.odin.function.StaticFactoryMethodConstructionFunction;
 import io.jcoder.odin.function.FactoryVarArgsConstructorFunction;
 import io.jcoder.odin.function.FactoryVarArgsFunction;
 import io.jcoder.odin.function.FieldInjectionFunction;
@@ -155,7 +156,7 @@ public class RegistrationBuilder<T> {
         return this.withConstructor(Stream.of(parameterReferences).map(ReferenceBuilder::build).toArray(InjectableReference<?>[]::new));
     }
 
-    public RegistrationBuilder<T> withFactory(FactoryVarArgsFunction<T> factory, Class<?>[] parameterTypes) {
+    public RegistrationBuilder<T> withFactory(FactoryVarArgsFunction<T> factory, Class<?>... parameterTypes) {
         if (constructor != null) {
             throw new IllegalStateException(
                     "A constructor reference has already been defined. Are you calling withConstructor or withFactory more than once?");
@@ -179,22 +180,46 @@ public class RegistrationBuilder<T> {
         return this.withFactory(factory,
                 Stream.of(parameterReferences).map(ReferenceBuilder::build).toArray(InjectableReference<?>[]::new));
     }
+    
+    public RegistrationBuilder<T> withFactory(InjectableReference<?> factoryReference, String methodName,
+            InjectableReference<?>... parameterReferences) throws NoSuchMethodException {
+        if (constructor != null) {
+            throw new IllegalStateException(
+                    "A constructor reference has already been defined. Are you calling withConstructor or withFactory more than once?");
+        }
+        this.constructor = new FactoryMethodConstructionFunction<>(this.classToRegister, factoryReference, methodName,
+                Arrays.asList(parameterReferences));
+        return this;
+    }
 
-    public RegistrationBuilder<T> withFactory(Class<?> factoryClass, String staticMethodName, InjectableReference<?>... parameterReferences)
+    public RegistrationBuilder<T> withFactory(ReferenceBuilder<?> factoryReference, String methodName,
+            ReferenceBuilder<?>... parameterReferences) throws NoSuchMethodException {
+        this.withFactory(factoryReference.build(), methodName, parameterReferences);
+        return this;
+    }
+
+    public RegistrationBuilder<T> withFactory(InjectableReference<?> factoryReference, String methodName,
+            ReferenceBuilder<?>... parameterReferences) throws NoSuchMethodException {
+
+        return this.withFactory(factoryReference, methodName,
+                Stream.of(parameterReferences).map(ReferenceBuilder::build).toArray(InjectableReference<?>[]::new));
+    }
+    
+    public RegistrationBuilder<T> withStaticFactory(Class<?> factoryClass, String staticMethodName, InjectableReference<?>... parameterReferences)
             throws NoSuchMethodException {
         if (constructor != null) {
             throw new IllegalStateException(
                     "A constructor reference has already been defined. Are you calling withConstructor or withFactory more than once?");
         }
-        this.constructor = new FactoryMethodConstructionFunction<>(this.classToRegister, factoryClass, staticMethodName,
+        this.constructor = new StaticFactoryMethodConstructionFunction<>(this.classToRegister, factoryClass, staticMethodName,
                 Arrays.asList(parameterReferences));
         return this;
     }
 
-    public RegistrationBuilder<T> withFactory(Class<?> factoryClass, String staticMethodName, ReferenceBuilder<?>... parameterReferences)
+    public RegistrationBuilder<T> withStaticFactory(Class<?> factoryClass, String staticMethodName, ReferenceBuilder<?>... parameterReferences)
             throws NoSuchMethodException {
 
-        return this.withFactory(factoryClass, staticMethodName,
+        return this.withStaticFactory(factoryClass, staticMethodName,
                 Stream.of(parameterReferences).map(ReferenceBuilder::build).toArray(InjectableReference<?>[]::new));
     }
 
