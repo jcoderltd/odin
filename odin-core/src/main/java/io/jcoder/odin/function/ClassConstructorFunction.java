@@ -99,7 +99,7 @@ public class ClassConstructorFunction<T> implements ConstructionFunction<T> {
     }
 
     @Override
-    public List<InjectableReference<?>> parameters() {
+    public List<InjectableReference<?>> dependencies() {
         return new ArrayList<>(parameterReferences);
     }
 }

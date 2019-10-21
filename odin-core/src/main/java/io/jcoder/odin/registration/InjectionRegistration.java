@@ -199,7 +199,7 @@ public final class InjectionRegistration<T> implements Comparable<InjectionRegis
             throw new IllegalStateException("Trying to get construction parameters when no constructor is available: " + this.toString());
         }
 
-        for (InjectableReference<?> param : constructor.parameters()) {
+        for (InjectableReference<?> param : constructor.dependencies()) {
             for (InjectionRegistration<?> registration : param.getRegistrations(context)) {
                 if (param.isNullable() && registration == null) {
                     continue;

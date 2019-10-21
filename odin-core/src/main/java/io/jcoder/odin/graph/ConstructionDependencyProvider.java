@@ -42,7 +42,7 @@ public class ConstructionDependencyProvider implements DependencyProvider {
         ConstructionFunction<?> constructor = registration.getConstructor();
         if (constructor != null) {
             int idx = 0;
-            for (final InjectableReference<?> paramRef : constructor.parameters()) {
+            for (final InjectableReference<?> paramRef : constructor.dependencies()) {
                 for (final InjectionRegistration<?> reg : paramRef.getRegistrations(context)) {
                     if (!paramRef.isNullable() && reg == null) {
                         throw new IllegalStateException("No registration found for constructor parameter " + idx + " of "

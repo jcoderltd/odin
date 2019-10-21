@@ -75,7 +75,7 @@ public class StaticFactoryMethodConstructionFunction<T> implements ConstructionF
     }
 
     @Override
-    public List<InjectableReference<?>> parameters() {
+    public List<InjectableReference<?>> dependencies() {
         return parameterReferences;
     }
 

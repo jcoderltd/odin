@@ -34,5 +34,5 @@ public interface ConstructionFunction<T> {
     T newObject(InjectionContext context)
             throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
 
-    List<InjectableReference<?>> parameters();
+    List<InjectableReference<?>> dependencies();
 }

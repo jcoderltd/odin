@@ -53,7 +53,7 @@ public class FactoryVarArgsConstructorFunction<T> implements ConstructionFunctio
     }
 
     @Override
-    public List<InjectableReference<?>> parameters() {
+    public List<InjectableReference<?>> dependencies() {
         return new ArrayList<>(parameterReferences);
     }
 }

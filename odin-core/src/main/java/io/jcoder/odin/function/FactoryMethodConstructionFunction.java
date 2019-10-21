@@ -17,6 +17,7 @@ package io.jcoder.odin.function;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 import io.jcoder.odin.ConstructionFunctionException;
@@ -36,21 +37,24 @@ public class FactoryMethodConstructionFunction<T> implements ConstructionFunctio
 
     private final List<InjectableReference<?>> parameterReferences;
 
+    private final List<InjectableReference<?>> dependencies;
+
     private final Class<?>[] parameterTypes;
 
     public FactoryMethodConstructionFunction(final Class<T> typeToConstruct, final InjectableReference<?> factoryReference,
-            final String methodName,
-            final List<InjectableReference<?>> parameterReferences)
-            throws NoSuchMethodException {
+            final String methodName, final List<InjectableReference<?>> parameterReferences) throws NoSuchMethodException {
+
         Preconditions.verifyNotNull(typeToConstruct, "The type to construct must not be null");
         Preconditions.verifyNotNull(factoryReference, "The factory reference must not be null");
         Preconditions.verifyNotNull(methodName, "The method name must not be null");
 
         this.factoryReference = factoryReference;
-        this.parameterReferences = parameterReferences;
+        this.parameterReferences = new ArrayList<>(parameterReferences);
+        this.dependencies = new ArrayList<>(parameterReferences);
+        this.dependencies.add(factoryReference);
 
         this.parameterTypes = parameterReferences.stream().map(ref -> ref.getInjectableType()).toArray(Class<?>[]::new);
-        this.method = this.factoryReference.getInjectableType().getMethod(methodName, parameterTypes);
+        this.method = this.factoryReference.getInjectableType().getDeclaredMethod(methodName, parameterTypes);
         this.method.setAccessible(true);
 
         Preconditions.verifyArgumentCondition(typeToConstruct.isAssignableFrom(this.method.getReturnType()),
@@ -77,8 +81,8 @@ public class FactoryMethodConstructionFunction<T> implements ConstructionFunctio
     }
 
     @Override
-    public List<InjectableReference<?>> parameters() {
-        return parameterReferences;
+    public List<InjectableReference<?>> dependencies() {
+        return dependencies;
     }
 
 }
