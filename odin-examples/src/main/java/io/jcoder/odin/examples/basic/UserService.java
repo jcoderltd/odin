@@ -22,7 +22,6 @@ import javax.inject.Singleton;
  * 
  * <p>
  * This is an empty class as it's meant only for the DI example
- * </p>
  * 
  * @author Camilo Gonzalez
  */

@@ -13,42 +13,37 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package io.jcoder.odin.examples.component.factory01;
+package io.jcoder.odin.examples.component.provider;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
+import javax.inject.Provider;
 
 import io.jcoder.odin.annotation.component.Component;
 import io.jcoder.odin.annotation.component.Registration;
 import io.jcoder.odin.examples.basic.UserRepository;
-import io.jcoder.odin.examples.basic.UserService;
 
 /**
- * A component that contains the user related classes.
+ * A component that contains the login related classes.
  * 
  * <p>
- * In this example we assume that we don't own the {@link UserRepository} class and we can't annotate it as we require.
- * 
- * <p>
- * In these cases we can make use of a factory method to create the required managed instance.
+ * In this example we are creating a {@link LoginService} that uses a {@link Provider} for the injection of the
+ * {@link UserRepository} instance.
  * 
  * @author Camilo Gonzalez
  */
 @Component
-public class UserComponent {
+public class LoginComponent {
 
     @Inject
     @Registration
-    private UserService userService;
+    private LoginService loginService;
 
+    @Inject
     @Registration
-    @Singleton
-    private UserRepository userRepository() {
-        return new UserRepository();
-    }
+    private UserRepository userRepository;
 
-    public UserService getUserService() {
-        return userService;
+    public LoginService getLoginService() {
+        return loginService;
     }
 
 }

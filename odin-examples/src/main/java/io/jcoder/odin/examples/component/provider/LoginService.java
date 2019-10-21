@@ -13,42 +13,33 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package io.jcoder.odin.examples.basic;
+package io.jcoder.odin.examples.component.provider;
 
-import javax.inject.Singleton;
+import javax.inject.Provider;
+
+import io.jcoder.odin.examples.basic.User;
+import io.jcoder.odin.examples.basic.UserRepository;
 
 /**
- * Represents a repository for {@link User} data.
+ * Represents a login class for that depends on the {@link UserRepository}.
  * 
  * <p>
  * This is an empty class as it's meant only for the DI example
  * 
  * @author Camilo Gonzalez
  */
-@Singleton
-public class UserRepository {
+public class LoginService {
 
-    private static int NUM_INSTANCE = 0;
+    private final Provider<UserRepository> userRepositoryProvider;
 
-    private int instance;
-
-    public UserRepository() {
-        this.instance = NUM_INSTANCE++;
+    public LoginService(Provider<UserRepository> userRepository) {
+        this.userRepositoryProvider = userRepository;
     }
 
-    public User get(long id) {
-        System.out.println("Retrieving user with id: " + id);
-        return new User(id, "Name", "email@somedomain.com");
-    }
-
-    public User save(User user) {
-        System.out.println("Saving user: " + user);
-        return user;
-    }
-
-    @Override
-    public String toString() {
-        return "UserRepository [instance=" + instance + "]";
+    public User login(int userId) {
+        UserRepository userRepo = userRepositoryProvider.get();
+        System.out.println(userRepo);
+        return userRepo.get(userId);
     }
 
 }

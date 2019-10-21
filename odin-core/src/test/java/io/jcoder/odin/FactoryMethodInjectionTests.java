@@ -15,7 +15,6 @@
  */
 package io.jcoder.odin;
 
-import static io.jcoder.odin.builder.ReferenceBuilder.paramOfType;
 import static io.jcoder.odin.builder.ReferenceBuilder.ofType;
 import static io.jcoder.odin.builder.RegistrationBuilder.singleton;
 import static io.jcoder.odin.builder.RegistrationBuilder.type;
