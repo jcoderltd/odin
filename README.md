@@ -1,6 +1,8 @@
 # Odin - A Dependency Injection Library
 
-Odin is an Object Dependency INjection library for Java applications. 
+Odin is an Object Dependency INjection library for Java applications.
+
+[![Build Status](https://travis-ci.org/jcoderltd/odin.svg?branch=master)](https://travis-ci.org/jcoderltd/odin)
 
 ## Important notes:
 
