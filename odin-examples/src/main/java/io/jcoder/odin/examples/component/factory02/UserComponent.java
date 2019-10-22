@@ -31,7 +31,7 @@ import io.jcoder.odin.examples.basic.UserService;
  * both the {@link UserRepository} and the {@link UserService} instances
  * 
  * <p>
- * In this cases we can make use of a factory method to create the required managed instance.
+ * In these cases we can make use of a factory method to create the required managed instance.
  * 
  * @author Camilo Gonzalez
  */
