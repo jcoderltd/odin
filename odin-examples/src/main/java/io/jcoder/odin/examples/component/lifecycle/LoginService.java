@@ -13,11 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package io.jcoder.odin.examples.component.provider;
+package io.jcoder.odin.examples.component.lifecycle;
 
-import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import io.jcoder.odin.annotation.PostConstruct;
+import io.jcoder.odin.annotation.PreDestroy;
 import io.jcoder.odin.examples.basic.User;
 import io.jcoder.odin.examples.basic.UserRepository;
 
@@ -32,16 +33,23 @@ import io.jcoder.odin.examples.basic.UserRepository;
 @Singleton
 public class LoginService {
 
-    private final Provider<UserRepository> userRepositoryProvider;
+    private final UserRepository userRepository;
 
-    public LoginService(Provider<UserRepository> userRepository) {
-        this.userRepositoryProvider = userRepository;
+    public LoginService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     public User login(int userId) {
-        UserRepository userRepo = userRepositoryProvider.get();
-        System.out.println(userRepo);
-        return userRepo.get(userId);
+        return userRepository.get(userId);
     }
 
+    @PostConstruct
+    private void initialize() {
+        System.out.println("Login Service initialized");
+    }
+
+    @PreDestroy
+    private void terminate() {
+        System.out.println("Login Service terminated");
+    }
 }

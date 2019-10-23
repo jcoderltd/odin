@@ -17,11 +17,11 @@ package io.jcoder.odin.examples.gettingstarted;
 
 import static io.jcoder.odin.annotation.builder.AnnotationAwareRegistrationBuilder.annotated;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
 
 import io.jcoder.odin.DefaultInjectionContext;
 import io.jcoder.odin.InjectionContext;
+import io.jcoder.odin.annotation.PostConstruct;
 
 /**
  * This is the first example shown in the Getting Started wiki page.

@@ -17,10 +17,8 @@ package io.jcoder.odin.function;
 
 import java.io.Serializable;
 
-import javax.annotation.PreDestroy;
-
 /**
- * Represents a PreDestroy function, adapted as possible from the {@link PreDestroy} annotation definition.
+ * Represents a PreDestroy function.
  *
  * <p>
  * This method is called on the instance after its being detached from the InjectionContext.

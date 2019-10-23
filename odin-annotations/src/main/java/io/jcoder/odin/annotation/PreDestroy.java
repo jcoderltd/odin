@@ -13,21 +13,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package io.jcoder.odin.function;
+package io.jcoder.odin.annotation;
 
-import java.io.Serializable;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 /**
- * Represents a PostConstruct function.
- *
- * <p>
- * This method is called on the instance after its constructor and defined setter injection methods have been invoked.
- *
+ * Marks a method to be executed when the injection context is being destroyed and the instance needs to be terminated.
+ * Typically to free resources.
+ * 
  * @author Camilo Gonzalez
  */
-@FunctionalInterface
-public interface PostConstructionFunction<T> extends Serializable {
-
-    void postConstruct(T instance);
-
+@Documented
+@Retention(RUNTIME)
+@Target(METHOD)
+public @interface PreDestroy {
 }

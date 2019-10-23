@@ -30,8 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -39,6 +37,8 @@ import javax.inject.Singleton;
 
 import io.jcoder.odin.DestructionException;
 import io.jcoder.odin.InitializationException;
+import io.jcoder.odin.annotation.PostConstruct;
+import io.jcoder.odin.annotation.PreDestroy;
 import io.jcoder.odin.annotation.RequestScoped;
 import io.jcoder.odin.annotation.ScopedTo;
 import io.jcoder.odin.annotation.component.Component;

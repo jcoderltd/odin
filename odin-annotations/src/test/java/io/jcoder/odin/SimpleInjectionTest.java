@@ -17,10 +17,11 @@ package io.jcoder.odin;
 
 import static io.jcoder.odin.annotation.builder.AnnotationAwareRegistrationBuilder.annotated;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
 
 import org.junit.jupiter.api.Test;
+
+import io.jcoder.odin.annotation.PostConstruct;
 
 /**
  *
