@@ -10,14 +10,18 @@ Odin is an Object Dependency Injection library for Java applications.
 - We'll be adding more documentation as we go along
 - For the annotations module, support for javax.inject is provided for most features defined there.
 
+## Documentation:
+
+[User documentation](https://github.com/jcoderltd/odin/wiki)
+
 ## Include in a Java project using Gradle:
 
 ```java
 // if you want annotations support
-compile 'io.jcoder.odin:odin-annotations:0.1.0'
+compile 'io.jcoder.odin:odin-annotations:0.2.1'
 
 // if you want only the core
-compile 'io.jcoder.odin:odin-core:0.1.0'
+compile 'io.jcoder.odin:odin-core:0.2.1'
 ```
 
 ## Example usage:
