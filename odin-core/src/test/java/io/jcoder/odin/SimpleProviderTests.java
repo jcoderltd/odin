@@ -20,9 +20,16 @@ import static io.jcoder.odin.builder.RegistrationBuilder.singleton;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Set;
+
 import javax.inject.Provider;
 
 import org.junit.jupiter.api.Test;
+
+import io.jcoder.odin.graph.CompleteDependencyProvider;
+import io.jcoder.odin.graph.DependencyGraph;
+import io.jcoder.odin.graph.DependencyGraph.Node;
 
 /**
  *
@@ -54,5 +61,9 @@ public class SimpleProviderTests {
         assertNotNull(b);
         assertNotNull(b.providerOfA.get());
         assertEquals(context.get(A.class), b.providerOfA.get());
+
+        DependencyGraph graph = new DependencyGraph(context, new CompleteDependencyProvider());
+        Set<Node> nodes = graph.getNodes();
+        assertEquals(4, nodes.size());
     }
 }

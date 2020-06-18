@@ -16,6 +16,7 @@
 package io.jcoder.odin.registration;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -192,6 +193,17 @@ public final class InjectionRegistration<T> implements Comparable<InjectionRegis
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
             throw new ObjectCreationException("Exception creating instance of type: " + registeredClass, ex);
         }
+    }
+
+    public List<InjectableReference<?>> dependencies() {
+        List<InjectableReference<?>> dependencyRefs = new ArrayList<>();
+        if (constructor != null) {
+            dependencyRefs.addAll(constructor.dependencies());
+        }
+        for (InjectionFunction<?> setter : setters) {
+            dependencyRefs.addAll(setter.dependencies());
+        }
+        return dependencyRefs;
     }
 
     private void prepareScopedDependencies(InjectionContext context) {

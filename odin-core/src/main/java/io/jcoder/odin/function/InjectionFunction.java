@@ -16,9 +16,11 @@
 package io.jcoder.odin.function;
 
 import java.lang.reflect.Member;
+import java.util.Collection;
 import java.util.Optional;
 
 import io.jcoder.odin.InjectionContext;
+import io.jcoder.odin.reference.InjectableReference;
 
 /**
  * Represents an Injection function that is responsible of injecting an object or set of objects into a provided
@@ -41,4 +43,9 @@ public interface InjectionFunction<T> {
      * @return
      */
     Optional<Member> member();
+
+    /**
+     * Provides the {@link InjectableReference} that make up the dependencies of this {@link InjectionFunction}
+     */
+    Collection<? extends InjectableReference<?>> dependencies();
 }

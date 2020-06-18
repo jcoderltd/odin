@@ -40,6 +40,10 @@ public class ProviderInjectableReference<T> implements InjectableReference<Provi
     public List<InjectionRegistration<Provider<?>>> getRegistrations(InjectionContext context) {
         return Collections.singletonList(context.getProviderRegistration(delegate.getRegistrations(context).get(0)));
     }
+    
+    public InjectableReference<T> getDelegate() {
+        return delegate;
+    }
 
     @Override
     public Class<Provider> getInjectableType() {

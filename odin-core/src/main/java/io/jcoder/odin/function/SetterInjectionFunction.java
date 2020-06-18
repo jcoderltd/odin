@@ -16,6 +16,8 @@
 package io.jcoder.odin.function;
 
 import java.lang.reflect.Member;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 import io.jcoder.odin.InjectionContext;
@@ -44,6 +46,11 @@ public final class SetterInjectionFunction<T, O> implements InjectionFunction<T>
     @Override
     public void apply(InjectionContext context, T instance) {
         setter.set(instance, referenceToInject.get(context));
+    }
+
+    @Override
+    public Collection<? extends InjectableReference<?>> dependencies() {
+        return Collections.singleton(referenceToInject);
     }
 
     @Override

@@ -18,6 +18,7 @@ package io.jcoder.odin.function;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,6 +63,11 @@ public class MethodInjectionFunction<T> implements InjectionFunction<T> {
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw new InjectionFunctionException(this, "Method " + method.getName() + " of class " + type.getName(), e);
         }
+    }
+    
+    @Override
+    public Collection<? extends InjectableReference<?>> dependencies() {
+        return parameterReferences;
     }
 
     @Override

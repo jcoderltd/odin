@@ -15,6 +15,10 @@
  */
 package io.jcoder.odin.graph;
 
+import java.io.BufferedWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import io.jcoder.odin.InjectionContext;
@@ -34,6 +39,8 @@ import io.jcoder.odin.registration.InjectionRegistration;
  * @author Camilo Gonzalez
  */
 public class DependencyGraph {
+
+    private final AtomicInteger nextId = new AtomicInteger();
 
     private final InjectionContext context;
 
@@ -48,20 +55,6 @@ public class DependencyGraph {
         this.registrations = context.getRegistrations();
         this.nodeMap = new HashMap<>();
         buildGraph(provider);
-    }
-
-    private void buildGraph(DependencyProvider provider) {
-        for (final InjectionRegistration<?> reg : registrations) {
-            final Node regNode = nodeMap.computeIfAbsent(reg, Node::new);
-            final Collection<InjectionRegistration<?>> dependencies = provider.dependencies(context, reg);
-
-            for (final InjectionRegistration<?> dep : dependencies) {
-                final Node depNode = nodeMap.computeIfAbsent(dep, Node::new);
-                regNode.outgoing.add(depNode);
-                depNode.incoming.add(regNode);
-            }
-
-        }
     }
 
     /**
@@ -86,6 +79,24 @@ public class DependencyGraph {
         }
 
         return cycles;
+    }
+
+    public Set<Node> getNodes() {
+        return new HashSet<>(nodeMap.values());
+    }
+
+    private void buildGraph(DependencyProvider provider) {
+        for (final InjectionRegistration<?> reg : registrations) {
+            final Node regNode = nodeMap.computeIfAbsent(reg, Node::new);
+            final Collection<InjectionRegistration<?>> dependencies = provider.dependencies(context, reg);
+
+            for (final InjectionRegistration<?> dep : dependencies) {
+                final Node depNode = nodeMap.computeIfAbsent(dep, Node::new);
+                regNode.outgoing.add(depNode);
+                depNode.incoming.add(regNode);
+            }
+
+        }
     }
 
     private void checkForCycles(Set<Node> checked, Node node, List<Node> current, List<Cycle> cyclesFound) {
@@ -176,6 +187,10 @@ public class DependencyGraph {
     }
 
     public class Node {
+        private final String id;
+
+        private final String label;
+
         /**
          * The {@link InjectionRegistration} that this node represents.
          */
@@ -192,6 +207,12 @@ public class DependencyGraph {
         private final List<Node> outgoing;
 
         public Node(InjectionRegistration<?> registration) {
+            this.id = "node" + nextId.getAndIncrement();
+            if (registration != null) {
+                this.label = registration.getName();
+            } else {
+                this.label = "nullable";
+            }
             this.registration = registration;
             this.incoming = new ArrayList<>();
             this.outgoing = new ArrayList<>();
@@ -227,6 +248,25 @@ public class DependencyGraph {
             return true;
         }
 
+    }
+
+    public void generateDotFile(OutputStream output) {
+        BufferedWriter buffOut = new BufferedWriter(new OutputStreamWriter(output));
+        PrintWriter out = new PrintWriter(buffOut);
+
+        out.println("digraph injectionContext {");
+        for (Node node : nodeMap.values()) {
+            out.println(String.format("    /* Start of node: %s */", node.label));
+            out.println(String.format("    %s [label=\"%s\"];", node.id, node.label));
+            for (Node dep : node.outgoing) {
+                out.println(String.format("    %s -> %s;", node.id, dep.id));
+            }
+            out.println(String.format("    /* End of node: %s */", node.label));
+            out.println();
+            out.flush();
+        }
+        out.println("}");
+        out.flush();
     }
 
 }

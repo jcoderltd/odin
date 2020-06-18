@@ -17,6 +17,8 @@ package io.jcoder.odin.function;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 import io.jcoder.odin.InjectionContext;
@@ -55,6 +57,11 @@ public class FieldInjectionFunction<T> implements InjectionFunction<T> {
         } catch (IllegalAccessException | IllegalArgumentException e) {
             throw new InjectionFunctionException(this, "Field " + field.getName() + " of class " + type.getName(), e);
         }
+    }
+
+    @Override
+    public Collection<? extends InjectableReference<?>> dependencies() {
+        return Collections.singleton(parameterReference);
     }
 
     @Override
