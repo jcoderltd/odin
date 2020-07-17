@@ -15,7 +15,6 @@
  */
 package io.jcoder.odin;
 
-import static io.jcoder.odin.annotation.builder.AnnotationAwareRegistrationBuilder.annotated;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -25,6 +24,7 @@ import javax.inject.Singleton;
 
 import org.junit.jupiter.api.Test;
 
+import io.jcoder.odin.annotation.ComponentBasedInjectionContext;
 import io.jcoder.odin.annotation.PostConstruct;
 import io.jcoder.odin.base.Preconditions;
 
@@ -68,9 +68,9 @@ public class AnnotationInjectionTest {
 
     @Test
     public void test() throws Exception {
-        InjectionContext context = new DefaultInjectionContext();
-        context.register(annotated(A.class));
-        context.register(annotated(B.class));
+        ComponentBasedInjectionContext context = new ComponentBasedInjectionContext();
+        context.registerAnnotated(A.class);
+        context.registerAnnotated(B.class);
         context.initialize();
 
         A a = context.get(A.class);

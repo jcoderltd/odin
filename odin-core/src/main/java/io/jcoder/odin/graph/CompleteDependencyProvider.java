@@ -40,6 +40,7 @@ import io.jcoder.odin.registration.InjectionRegistration;
  */
 public class CompleteDependencyProvider implements DependencyProvider {
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public Collection<InjectionRegistration<?>> dependencies(InjectionContext context, InjectionRegistration<?> registration) {
         if (registration.isProvided()) {

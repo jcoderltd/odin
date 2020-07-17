@@ -23,9 +23,8 @@ import javax.inject.Singleton;
 
 import org.junit.jupiter.api.Test;
 
+import io.jcoder.odin.annotation.ComponentBasedInjectionContext;
 import io.jcoder.odin.annotation.component.Component;
-import io.jcoder.odin.annotation.component.ComponentRegistrar;
-import io.jcoder.odin.annotation.component.DefaultComponentRegistrar;
 import io.jcoder.odin.annotation.component.Registration;
 
 /**
@@ -71,11 +70,11 @@ public class ComponentWithStaticFactoryTest {
 
     @Test
     public void testSingleInstances() {
-        ComponentRegistrar registrar = new DefaultComponentRegistrar();
-        registrar.addComponent(TestComponent.class);
-        registrar.initialize();
+        ComponentBasedInjectionContext context = new ComponentBasedInjectionContext();
+        context.addComponent(TestComponent.class);
+        context.initialize();
 
-        TestComponent c = registrar.injectionContext().get(TestComponent.class);
+        TestComponent c = context.get(TestComponent.class);
         assertNotNull(c);
         assertNotNull(c.b);
         assertNotNull(c.b.a);

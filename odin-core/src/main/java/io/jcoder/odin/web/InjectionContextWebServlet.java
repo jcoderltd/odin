@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -52,6 +53,8 @@ import io.jcoder.odin.web.aop.HttpServletInterceptorRegistration;
 public abstract class InjectionContextWebServlet extends HttpServlet {
 
     private static final long serialVersionUID = 5451373285705790146L;
+    
+    private static final String DEFAULT_SERVLET_NAME = "default";
 
     private final static Logger logger = LoggerFactory.getLogger(InjectionContextWebServlet.class);
 
@@ -127,7 +130,11 @@ public abstract class InjectionContextWebServlet extends HttpServlet {
                 }
             }
         } else {
-            logger.trace("No registered servlet found for servlet path {}", requestedPath);
+            if (logger.isTraceEnabled()) {
+                logger.trace("No registered servlet found for servlet path {} - forwarding to default servlet", requestedPath);
+            }
+            RequestDispatcher dispatcher = req.getServletContext().getNamedDispatcher(DEFAULT_SERVLET_NAME);
+            dispatcher.forward(req, resp);
         }
     }
 

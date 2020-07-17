@@ -27,7 +27,7 @@ import io.jcoder.odin.examples.basic.UserRepository;
  * A component that contains the login related classes.
  * 
  * <p>
- * In this example we are creating a {@link LoginService} that get an {@link UserRepository} instance and has a
+ * In this example we are creating a {@link LoginService} that gets an {@link UserRepository} instance and has a
  * {@link PostConstruct} and a {@link PreDestroy} method.
  * 
  * @author Camilo Gonzalez

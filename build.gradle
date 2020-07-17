@@ -1,64 +1,64 @@
 buildscript {
-	repositories {
-		jcenter()
-		mavenCentral()
-	}
-	dependencies {
-		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.10.0'
-	}
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.10.0'
+    }
 }
 
 apply from: './scripts/gradle/publishing.gradle'
 
 allprojects {
-	apply plugin: 'maven-publish'
-	apply plugin: 'signing'
-	apply plugin: "license"
-	
-	group = 'io.jcoder.odin'
-	version = '0.2.2'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+    apply plugin: "license"
+    
+    group = 'io.jcoder.odin'
+    version = '0.2.4'
 
-	repositories {
-		maven {
-			// Google's mirror of Maven Central
-			url 'https://maven-central.storage.googleapis.com'
-		}
-		jcenter()
-		mavenCentral()
-	}
-	
-	license {
-		header rootProject.file("./devconf/LICENSE_HEADER")
-		include "**/*.java"
-		exclude "**/package-info.java"
-	}
-	
-	publishing {
-		repositories {
-			maven {
-				url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-				if (project.hasProperty('sonatypeUsername')) {
-					credentials {
-						username sonatypeUsername
-						password sonatypePassword
-					}
-				}
-			}
-		}
-	}
+    repositories {
+        maven {
+            // Google's mirror of Maven Central
+            url 'https://maven-central.storage.googleapis.com'
+        }
+        jcenter()
+        mavenCentral()
+    }
+    
+    license {
+        header rootProject.file("./devconf/LICENSE_HEADER")
+        include "**/*.java"
+        exclude "**/package-info.java"
+    }
+    
+    publishing {
+        repositories {
+            maven {
+                url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                if (project.hasProperty('sonatypeUsername')) {
+                    credentials {
+                        username sonatypeUsername
+                        password sonatypePassword
+                    }
+                }
+            }
+        }
+    }
 }
 
 publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			def artifactName = 'odin'
-			project.ext.customizePom(pom, artifactName)
-		}
-	}
+    publications {
+        mavenJava(MavenPublication) {
+            def artifactName = 'odin'
+            project.ext.customizePom(pom, artifactName)
+        }
+    }
 }
 
 if (project.hasProperty('signing.keyId')) {
-	signing {
-	    sign publishing.publications.mavenJava
-	}
+    signing {
+        sign publishing.publications.mavenJava
+    }
 }
