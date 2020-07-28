@@ -25,8 +25,6 @@ import org.junit.jupiter.api.Test;
 
 import io.jcoder.odin.annotation.ComponentBasedInjectionContext;
 import io.jcoder.odin.annotation.component.Component;
-import io.jcoder.odin.annotation.component.ComponentRegistrar;
-import io.jcoder.odin.annotation.component.DefaultComponentRegistrar;
 import io.jcoder.odin.annotation.component.Registration;
 
 /**

@@ -3,6 +3,7 @@
 Odin is an Object Dependency Injection library for Java applications.
 
 [![Build Status](https://travis-ci.org/jcoderltd/odin.svg?branch=master)](https://travis-ci.org/jcoderltd/odin)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/jcoderltd/odin)
 
 ## Important notes:
 
@@ -18,10 +19,10 @@ Odin is an Object Dependency Injection library for Java applications.
 
 ```java
 // if you want annotations support
-compile 'io.jcoder.odin:odin-annotations:0.2.1'
+compile 'io.jcoder.odin:odin-annotations:0.2.4'
 
 // if you want only the core
-compile 'io.jcoder.odin:odin-core:0.2.1'
+compile 'io.jcoder.odin:odin-core:0.2.4'
 ```
 
 ## Example usage:

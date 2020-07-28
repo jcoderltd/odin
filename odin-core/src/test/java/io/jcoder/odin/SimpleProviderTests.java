@@ -20,7 +20,6 @@ import static io.jcoder.odin.builder.RegistrationBuilder.singleton;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.io.ByteArrayOutputStream;
 import java.util.Set;
 
 import javax.inject.Provider;
